@@ -256,6 +256,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
 .tab[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
 [hidden] { display: none !important; }
 .sstatus { color: var(--muted); font-size: 14px; padding: 10px 2px 0; }
+.chip-sep { width: 1px; align-self: stretch; background: var(--line); margin: 4px 2px; }
 .sortbar { display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; padding: 10px 0 2px; }
 .sortbar::-webkit-scrollbar { display: none; }
 .sortbar .lbl { color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: .06em; margin-right: 4px; }
@@ -361,6 +362,9 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       <button class="chip" data-c="all" aria-pressed="true" data-i18n="cAll"></button>
       <button class="chip" data-c="movies" aria-pressed="false" data-i18n="cMovies"></button>
       <button class="chip" data-c="tv" aria-pressed="false" data-i18n="cTv"></button>
+      <span class="chip-sep" aria-hidden="true"></span>
+      <button class="chip" data-r="1080" aria-pressed="false">1080p</button>
+      <button class="chip" data-r="2160" aria-pressed="false">2160p</button>
     </div>
     <form class="search-row" id="searchForm" hidden>
       <input class="search" id="sq" type="search" enterkeyhint="search" data-i18n-ph="searchPh" data-i18n-aria="tabSearch">
@@ -994,8 +998,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       var isOpen = !!open[x.id];
       return '<li class="row ' + d.cls + (isOpen ? " open" : "") + '" data-id="' + x.id + '">' +
         '<button class="row-head" aria-expanded="' + isOpen + '">' +
-          '<div class="name">' + esc(prettyTitle(prettyName(x.name))) +
-            (prettyName(x.name).tags.length ? ' <span class="row-tags">' + tagChips(prettyName(x.name)) + '</span>' : '') + '</div>' +
+          '<div class="name">' + esc(x.name) + '</div>' +
           '<div class="state"><span class="dot"></span><strong>' + esc(d.label) + '</strong>' +
             (d.detail ? '<span>' + esc(d.detail) + '</span>' : '') + '</div>' +
           '<div class="progress"><div class="track"><div class="fill" style="width:' + Math.min(100, d.pct) + '%"></div></div>' +
@@ -1009,7 +1012,6 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
             '<div class="wide"><dt>' + t("folder") + '</dt><dd>' + esc(x.downloadDir || "—") + '</dd></div>' +
             (x.error > 0 ? '<div class="wide"><dt>' + t("stError") + '</dt><dd>' + esc(x.errorString) + '</dd></div>' : '') +
           '</dl>' +
-          '<div class="row-raw">' + esc(x.name) + '</div>' +
           '<div class="actions">' +
             (paused
               ? '<button class="btn primary" data-act="start">' + t("resume") + '</button>'
@@ -1393,7 +1395,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     document.getElementById("searchForm").hidden = !s;
     document.getElementById("searchPanel").hidden = !s;
     document.getElementById("openAdd").hidden = s;
-    document.getElementById("searchTrk").hidden = !s || sTrackerNames().length < 2;
+    document.getElementById("searchTrk").hidden = true;
     if (!s) return;
     if (!sResults && !sBusy) {
       // First time: show the latest releases right away
@@ -1414,11 +1416,23 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
   var sStatus = document.getElementById("sStatus");
   var resultsEl = document.getElementById("results");
 
+  var sRes = "";             // "" | "1080" | "2160": resolution filter
+  var RX_RES_FILTER = { "1080": /(^|[^0-9])1080[pi]([^0-9]|$)/i, "2160": /(^|[^0-9])2160p([^0-9]|$)|(^|[^a-z0-9])(4k|uhd)([^a-z0-9]|$)/i };
   document.getElementById("searchCats").addEventListener("click", function (e) {
-    var b = e.target.closest(".chip");
+    var rb = e.target.closest("[data-r]");
+    if (rb) {
+      // Resolution: filters what is shown, tap again to show all
+      sRes = sRes === rb.getAttribute("data-r") ? "" : rb.getAttribute("data-r");
+      Array.prototype.forEach.call(this.querySelectorAll("[data-r]"), function (c) {
+        c.setAttribute("aria-pressed", String(c.getAttribute("data-r") === sRes));
+      });
+      renderResults();
+      return;
+    }
+    var b = e.target.closest("[data-c]");
     if (!b) return;
     sCat = b.getAttribute("data-c");
-    Array.prototype.forEach.call(this.querySelectorAll(".chip"), function (c) {
+    Array.prototype.forEach.call(this.querySelectorAll("[data-c]"), function (c) {
       c.setAttribute("aria-pressed", String(c === b));
     });
     if (sResults) runSearch();
@@ -1436,7 +1450,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     var el = document.getElementById("searchTrk");
     var names = sTrackerNames();
     if (names.indexOf(sTracker) < 0) sTracker = "";
-    el.hidden = mode === "torrents" || names.length < 2;
+    el.hidden = true; // no per-tracker filter: one mixed list
     el.innerHTML = [""].concat(names).map(function (n) {
       return '<button class="chip" data-t="' + esc(n) + '" aria-pressed="' + (sTracker === n) + '">' +
         esc(n || t("allTrackers")) + '</button>';
@@ -1450,7 +1464,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
   });
 
   var SORTS = [
-    ["seeders", "sPop", function (x) { return x.seeders || 0; }],
+    ["seeders", "sSeeders", function (x) { return x.seeders || 0; }],
     ["date", "sRecent", function (x) { return x.date || 0; }],
     ["size", "sSize", function (x) { return x.size || 0; }]
   ];
@@ -1501,7 +1515,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       return;
     }
     var list = r.results.filter(function (x) {
-      if (sTracker && x.tracker !== sTracker) return false;
+      if (sRes && !RX_RES_FILTER[sRes].test(x.title)) return false;
       return true;
     });
     sortList(list);
@@ -1514,18 +1528,16 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     sStatus.innerHTML = esc(head) + warn;
     resultsEl.innerHTML = list.map(function (x) {
       var done = !!sAdded[x.ref];
-      var p = prettyName(x.title), av = availability(x.seeders);
-      var avTitle = x.seeders >= 0 ? t("nSeeders", x.seeders) + (x.leechers >= 0 ? " · " + t("nLeechers", x.leechers) : "") : "";
+      var av = availability(x.seeders);
       return '<li class="res" data-ref="' + esc(x.ref) + '">' +
-        '<div class="res-title">' + esc(prettyTitle(p)) + '</div>' +
+        '<div class="res-title">' + esc(x.title) + '</div>' +
         '<div class="res-meta">' +
-          tagChips(p) +
+          (av ? '<span class="av ' + av.cls + '"><i></i>' + esc(t("nSeeders", x.seeders)) + '</span>' : '') +
+          (x.leechers >= 0 ? '<span>' + esc(t("nLeechers", x.leechers)) + '</span>' : '') +
           (x.size >= 0 ? '<span>' + size(x.size) + '</span>' : '') +
-          (av ? '<span class="av ' + av.cls + '" title="' + esc(avTitle) + '"><i></i>' + esc(t(av.key)) + '</span>' : '') +
           (x.date ? '<span>' + esc(ago(x.date)) + '</span>' : '') +
           '<span class="trk-name">' + esc(x.tracker) + '</span>' +
         '</div>' +
-        '<div class="res-raw">' + esc(x.title) + '</div>' +
         '<div class="actions">' +
           '<button class="btn primary" data-dl' + (done ? " disabled" : "") + '>' +
             esc(done ? t("addedOk") : t("download")) + '</button>' +
