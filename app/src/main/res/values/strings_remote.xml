@@ -77,8 +77,8 @@
 	<string name="plus_status_done">Done</string>
 	<string name="plus_status_paused">Paused</string>
 	<string name="plus_remote_button">📱  Control from my phone or computer</string>
-	<string name="plus_qr_steps">1. Scan this QR code with your phone's camera\n   (or type %1$s)\n2. Sign in with:\n   User: %2$s\n   Password: %3$s\n\nPhone or computer must be on the same Wi-Fi.</string>
-	<string name="plus_qr_steps_nopw">1. Scan this QR code with your phone's camera\n   (or type %1$s)\n\nPhone or computer must be on the same Wi-Fi.</string>
+	<string name="plus_qr_steps">1. Scan this QR code with your phone\'s camera\n   (or type %1$s)\n2. Sign in with:\n   User: %2$s\n   Password: %3$s\n\nPhone or computer must be on the same Wi-Fi.</string>
+	<string name="plus_qr_steps_nopw">1. Scan this QR code with your phone\'s camera\n   (or type %1$s)\n\nPhone or computer must be on the same Wi-Fi.</string>
 	<string name="plus_sequential">Watch while downloading</string>
 	<string name="plus_prefcat_advanced">Advanced</string>
 </resources>
