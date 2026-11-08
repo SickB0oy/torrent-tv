@@ -23,7 +23,7 @@
 							tools:showIn="@layout/activity_torrent_view"
 							tools:context="com.biglybt.android.client.fragment.TorrentListFragment">
 
-	<!-- BiglyBT Plus: remote access address and password, tap for a QR code -->
+	<!-- Torrent TV: "control from my phone" button, opens the QR code with address and password -->
 	<TextView
 		android:id="@+id/plus_remote_banner"
 		android:nextFocusDown="@id/plus_service_stop"
@@ -33,13 +33,15 @@
 		android:clickable="true"
 		android:focusable="true"
 		android:paddingStart="16dp"
-		android:paddingTop="10dp"
+		android:paddingTop="14dp"
 		android:paddingEnd="16dp"
-		android:paddingBottom="10dp"
+		android:paddingBottom="14dp"
+		android:gravity="center"
 		android:textColor="#FFFFFFFF"
-		android:textSize="14sp"
+		android:textSize="16sp"
+		android:textStyle="bold"
 		android:visibility="gone"
-		tools:text="Connexion à distance : http://192.168.1.20:9093"
+		tools:text="Piloter depuis mon téléphone ou mon PC"
 		tools:visibility="visible"/>
 
 	<!-- Torrent TV: stops the torrent service (red); the stopped screen has the

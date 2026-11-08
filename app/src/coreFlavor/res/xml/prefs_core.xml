@@ -49,11 +49,6 @@
 			android:title="@string/core_data_transfer_over_mobile_data_plan"
 			/>
 
-		<Preference
-			android:key="port_settings"
-			android:title="@string/preftitle_port_settings"
-			tools:summary="Randomly assigned\nCurrently port 381112">
-		</Preference>
 
 
 
@@ -97,14 +92,6 @@
 			tools:summary="Somewhere"
 			/>
 
-		<com.biglybt.android.widget.SwitchPreference
-			android:id="@+id/settings_show_open_options"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:key="show_open_options"
-			android:summary="@string/prefsummary_show_open_options"
-			android:title="@string/preftitle_show_open_options"
-			/>
 
 		<com.biglybt.android.widget.SwitchPreference
 			android:layout_width="wrap_content"
@@ -166,6 +153,23 @@
 
 		</PreferenceScreen>
 
+	</PreferenceCategory>
+
+	<!-- Torrent TV: options most people never need -->
+	<PreferenceCategory android:title="@string/plus_prefcat_advanced">
+		<com.biglybt.android.widget.SwitchPreference
+			android:id="@+id/settings_show_open_options"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:key="show_open_options"
+			android:summary="@string/prefsummary_show_open_options"
+			android:title="@string/preftitle_show_open_options"
+			/>
+		<Preference
+			android:key="port_settings"
+			android:title="@string/preftitle_port_settings"
+			tools:summary="Randomly assigned\nCurrently port 381112">
+		</Preference>
 	</PreferenceCategory>
 
 	<PreferenceCategory android:title="@string/prefcat_info">

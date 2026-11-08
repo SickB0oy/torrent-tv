@@ -49,6 +49,10 @@ public class DialogFragmentRemoteAccessQR
 
 	private static final String KEY_WEB_ONLY = "webOnly";
 
+	private static final String KEY_USER = "user";
+
+	private static final String KEY_PASSWORD = "password";
+
 	@Thunk
 	int viewMode = R.id.remote_access_qr_toggle_biglybt;
 
@@ -119,6 +123,15 @@ public class DialogFragmentRemoteAccessQR
 						? R.string.dialog_remote_access_biglybt_qr_info
 						: R.string.dialog_remote_access_webui_qr_info);
 		tv.setText(s);
+		if (args.getBoolean(KEY_WEB_ONLY)) {
+			// Torrent TV: steps in plain words, with what to type
+			String pw = args.getString(KEY_PASSWORD);
+			tv.setText(pw == null
+					? getString(R.string.plus_qr_steps_nopw, urlWebUI)
+					: getString(R.string.plus_qr_steps, urlWebUI,
+							args.getString(KEY_USER), pw));
+			tv.setTextIsSelectable(true);
+		}
 
 		final ImageView iv = view.findViewById(R.id.iv_qr);
 		if (iv != null) {
@@ -152,9 +165,11 @@ public class DialogFragmentRemoteAccessQR
 
 	/** Torrent TV: shows only the web page QR code */
 	public static void openWebOnly(FragmentManager fragmentManager,
-			String urlWebUI) {
+			String urlWebUI, String user, String password) {
 		DialogFragmentRemoteAccessQR dlg = new DialogFragmentRemoteAccessQR();
 		Bundle bundle = new Bundle();
+		bundle.putString(KEY_USER, user);
+		bundle.putString(KEY_PASSWORD, password);
 		bundle.putString(KEY_QR_URL_BIGLYBT, urlWebUI);
 		bundle.putString(KEY_QR_URL_WEBUI, urlWebUI);
 		bundle.putBoolean(KEY_WEB_ONLY, true);

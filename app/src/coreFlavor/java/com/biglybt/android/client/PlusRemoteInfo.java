@@ -58,6 +58,6 @@ public class PlusRemoteInfo
 
 	public void showQr(FragmentActivity activity) {
 		DialogFragmentRemoteAccessQR.openWebOnly(activity.getSupportFragmentManager(),
-				webUrl);
+				webUrl, user, password);
 	}
 }

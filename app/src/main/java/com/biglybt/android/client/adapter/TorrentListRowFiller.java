@@ -118,7 +118,10 @@ public class TorrentListRowFiller
 
 		String torrentName = MapUtils.getMapString(item,
 				TransmissionVars.FIELD_TORRENT_NAME, " ");
-		flipper.changeText(holder.tvName, AndroidUtils.lineBreaker(torrentName),
+		// Torrent TV: readable name ("Title — S03E06"), quality on the info line
+		com.biglybt.android.client.media.ReleaseName release = com.biglybt.android.client.media.ReleaseName.parse(
+				torrentName);
+		flipper.changeText(holder.tvName, AndroidUtils.lineBreaker(release.display()),
 				holder.animateFlip, validator);
 
 		int fileCount = MapUtils.getMapInt(item,
@@ -157,14 +160,14 @@ public class TorrentListRowFiller
 			StringBuilder sb = new StringBuilder();
 
 			if (size >= 0) {
-				if (fileCount <= 1) {
-					sb.append(DisplayFormatters.formatByteCountToKiBEtc(size));
-				} else {
-					sb.append(resources.getQuantityString(R.plurals.torrent_row_info,
-							fileCount, fileCount));
-					sb.append(resources.getString(R.string.torrent_row_info2,
-							DisplayFormatters.formatByteCountToKiBEtc(size)));
+				sb.append(DisplayFormatters.formatByteCountToKiBEtc(size));
+			}
+			String quality = release.tagLine();
+			if (!quality.isEmpty()) {
+				if (sb.length() > 0) {
+					sb.append(resources.getString(R.string.torrent_row_line_split));
 				}
+				sb.append(quality);
 			}
 
 			long numPeersDLFrom = MapUtils.getMapLong(item,
@@ -173,7 +176,9 @@ public class TorrentListRowFiller
 					TransmissionVars.FIELD_TORRENT_PEERS_GETTING_FROM_US, -1);
 			long numPeersConnected = MapUtils.getMapLong(item,
 					TransmissionVars.FIELD_TORRENT_PEERS_CONNECTED, -1);
-			if (numPeersConnected > 0 && numPeersDLFrom >= 0 && numPeersULTo >= 0) {
+			// Torrent TV: peer counts mean nothing to most people
+			if (false && numPeersConnected > 0 && numPeersDLFrom >= 0
+					&& numPeersULTo >= 0) {
 				if (sb.length() > 0) {
 					sb.append(resources.getString(R.string.torrent_row_line_split));
 				}
@@ -211,16 +216,11 @@ public class TorrentListRowFiller
 			long etaSecs = MapUtils.getMapLong(item,
 					TransmissionVars.FIELD_TORRENT_ETA, -1);
 			CharSequence s = "";
-			if (etaSecs > 0 && etaSecs * 1000L < DateUtils.WEEK_IN_MILLIS) {
-				s = DisplayFormatters.prettyFormatTimeDiffShort(resources, etaSecs);
-			} else if (pctDone >= 1) {
-				float shareRatio = MapUtils.getMapFloat(item,
-						TransmissionVars.FIELD_TORRENT_UPLOAD_RATIO, -1);
-				s = shareRatio < 0 ? ""
-						: AndroidUtils.fromHTML(resources,
-								holder.isSmall ? R.string.torrent_row_share_ratio
-										: R.string.torrent_row_share_ratio_circle,
-								shareRatio);
+			if (pctDone >= 1) {
+				s = resources.getString(R.string.plus_row_ready);
+			} else if (etaSecs > 0 && etaSecs * 1000L < DateUtils.WEEK_IN_MILLIS) {
+				s = resources.getString(R.string.plus_row_left,
+						DisplayFormatters.prettyFormatTimeDiffShort(resources, etaSecs));
 			}
 			flipper.changeText(holder.tvETA, s, holder.animateFlip, validator);
 		}
@@ -228,7 +228,7 @@ public class TorrentListRowFiller
 			long rateUpload = MapUtils.getMapLong(item,
 					TransmissionVars.FIELD_TORRENT_RATE_UPLOAD, 0);
 
-			if (rateUpload > 0) {
+			if (false && rateUpload > 0) {
 				String text = "|\u25B2 "
 						+ DisplayFormatters.formatByteCountToKiBEtcPerSec(rateUpload) + '|';
 				SpannableStringBuilder ss = new SpannableStringBuilder(text);
@@ -267,7 +267,8 @@ public class TorrentListRowFiller
 					TransmissionVars.FIELD_TORRENT_STATUS,
 					TransmissionVars.TR_STATUS_STOPPED);
 
-			if (mapTagUIDs == null || mapTagUIDs.size() == 0) {
+			// Torrent TV: one plain word, not the engine's state tags
+			if (true) {
 
 				int id;
 				switch (status) {
@@ -285,15 +286,13 @@ public class TorrentListRowFiller
 						break;
 
 					case TransmissionVars.TR_STATUS_SEED:
-						id = R.string.torrent_status_seed;
-						break;
-
 					case TransmissionVars.TR_STATUS_SEED_WAIT:
-						id = R.string.torrent_status_queued_ul;
+						id = R.string.plus_status_done;
 						break;
 
 					case TransmissionVars.TR_STATUS_STOPPED:
-						id = R.string.torrent_status_stopped;
+						id = pctDone >= 1 ? R.string.plus_status_done
+								: R.string.plus_status_paused;
 						break;
 
 					default:
@@ -408,7 +407,11 @@ public class TorrentListRowFiller
 			flipper.changeText(holder.tvStatus, ss, holder.animateFlip, validator);
 		}
 
-		if (holder.tvTags != null && showTags) {
+		if (holder.tvTags != null) {
+			// Torrent TV: no tag list on the rows
+			holder.tvTags.setVisibility(View.GONE);
+		}
+		if (false && holder.tvTags != null && showTags) {
 			ArrayList<Map<?, ?>> listTags = new ArrayList<>();
 			if (mapTagUIDs != null) {
 				for (Object o : mapTagUIDs) {

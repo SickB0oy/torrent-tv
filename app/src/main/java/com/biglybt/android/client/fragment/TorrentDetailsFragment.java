@@ -171,10 +171,8 @@ public class TorrentDetailsFragment
 			pageClassTitles.put(TorrentInfoFragment.class,
 					getString(R.string.details_tab_info));
 
-			pageClassTitles.put(PeersFragment.class,
-					getString(R.string.details_tab_peers));
-
-			if (session.getSupports(RPCSupports.SUPPORTS_TAGS)
+			// Torrent TV: only "Files" and "Info" (peers and tags are for experts)
+			if (false && session.getSupports(RPCSupports.SUPPORTS_TAGS)
 					&& !TorrentUtils.isMagnetTorrent(mapTorrent)) {
 				pageClassTitles.put(TorrentTagsFragment.class,
 						getString(R.string.details_tab_tags));

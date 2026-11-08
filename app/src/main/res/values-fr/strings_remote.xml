@@ -73,4 +73,13 @@
 	<string name="plus_filter_active">En cours</string>
 	<string name="plus_filter_done">Terminés</string>
 	<string name="plus_filter_paused">En pause</string>
+	<string name="plus_row_ready">✅ Prêt à regarder</string>
+	<string name="plus_row_left">encore %1$s</string>
+	<string name="plus_status_done">Terminé</string>
+	<string name="plus_status_paused">En pause</string>
+	<string name="plus_remote_button">📱  Piloter depuis mon téléphone ou mon PC</string>
+	<string name="plus_qr_steps">1. Scanne ce QR code avec l\'appareil photo de ton téléphone\n   (ou tape %1$s)\n2. Connecte-toi avec :\n   Identifiant : %2$s\n   Mot de passe : %3$s\n\nLe téléphone ou le PC doit être sur le même Wi-Fi.</string>
+	<string name="plus_qr_steps_nopw">1. Scanne ce QR code avec l\'appareil photo de ton téléphone\n   (ou tape %1$s)\n\nLe téléphone ou le PC doit être sur le même Wi-Fi.</string>
+	<string name="plus_sequential">Regarder pendant le téléchargement</string>
+	<string name="plus_prefcat_advanced">Avancé</string>
 </resources>

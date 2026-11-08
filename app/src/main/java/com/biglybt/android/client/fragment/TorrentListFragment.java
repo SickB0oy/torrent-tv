@@ -270,11 +270,8 @@ public class TorrentListFragment
 					banner.setVisibility(View.GONE);
 					return;
 				}
-				String text = info.password == null
-						? getString(R.string.plus_remote_banner_nopw, info.webUrl)
-						: getString(R.string.plus_remote_banner, info.webUrl, info.user,
-								info.password);
-				banner.setText(text);
+				// Torrent TV: one clear action; address and password are in the QR dialog
+				banner.setText(R.string.plus_remote_button);
 				banner.setVisibility(View.VISIBLE);
 				plusWebUrl = info.webUrl;
 				if (tvEmpty != null && session != null && !session.isDestroyed()
@@ -1418,6 +1415,15 @@ public class TorrentListFragment
 				R.id.action_sel_remove, R.id.action_sel_forcestart,
 				R.id.action_sel_sequential, R.id.action_sel_move,
 				R.id.action_sel_relocate);
+
+		// Torrent TV: keep Resume / Pause / Delete, and "watch while it
+		// downloads" (sequential); the rest is for experts
+		AndroidUtilsUI.setManyMenuItemsVisible(false, menu, R.id.action_sel_move,
+				R.id.action_sel_forcestart, R.id.action_sel_verify,
+				R.id.action_sel_relocate, R.id.action_refresh);
+		if (menuSequential != null) {
+			menuSequential.setTitle(R.string.plus_sequential);
+		}
 	}
 
 	@Thunk

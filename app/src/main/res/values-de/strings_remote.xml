@@ -69,4 +69,13 @@
 	<string name="plus_filter_active">Laufend</string>
 	<string name="plus_filter_done">Fertig</string>
 	<string name="plus_filter_paused">Pausiert</string>
+	<string name="plus_row_ready">✅ Bereit zum Ansehen</string>
+	<string name="plus_row_left">noch %1$s</string>
+	<string name="plus_status_done">Fertig</string>
+	<string name="plus_status_paused">Pausiert</string>
+	<string name="plus_remote_button">📱  Vom Smartphone oder Computer steuern</string>
+	<string name="plus_qr_steps">1. Scannen Sie diesen QR-Code mit der Kamera Ihres Smartphones\n   (oder geben Sie %1$s ein)\n2. Melden Sie sich an mit:\n   Benutzer: %2$s\n   Passwort: %3$s\n\nSmartphone oder Computer müssen im selben WLAN sein.</string>
+	<string name="plus_qr_steps_nopw">1. Scannen Sie diesen QR-Code mit der Kamera Ihres Smartphones\n   (oder geben Sie %1$s ein)\n\nSmartphone oder Computer müssen im selben WLAN sein.</string>
+	<string name="plus_sequential">Während des Downloads ansehen</string>
+	<string name="plus_prefcat_advanced">Erweitert</string>
 </resources>

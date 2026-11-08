@@ -447,6 +447,11 @@ public class PrefFragmentHandlerCore
 			} else {
 				prefAllowMobileData.setVisible(false);
 			}
+			// Torrent TV: the "Network" section holds only this switch now
+			if (prefAllowMobileData.getParent() != null) {
+				prefAllowMobileData.getParent().setVisible(
+						prefAllowMobileData.isVisible());
+			}
 		}
 
 		TwoStatePreference prefAutoStart = (TwoStatePreference) findPreference(

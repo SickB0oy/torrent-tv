@@ -192,6 +192,27 @@ public class TorrentInfoFragment
 		fillContent(activity, mapTorrent);
 
 		fillSharing(activity, mapTorrent);
+
+		// Torrent TV: keep dates, folder and ratio; hide the technical rows
+		int[] technical = {
+			R.id.torrentInfo_row_startedOn,
+			R.id.torrentInfo_row_lastActiveOn,
+			R.id.torrentInfo_row_downloadingFor,
+			R.id.torrentInfo_row_seedingFor,
+			R.id.torrentInfo_row_position,
+			R.id.torrentInfo_row_createdBy,
+			R.id.torrentInfo_row_comment,
+			R.id.torrentInfo_row_userComment,
+			R.id.torrentInfo_row_hash,
+			R.id.torrentInfo_row_peerCount,
+			R.id.torrentInfo_row_seedCount
+		};
+		for (int id : technical) {
+			View row = activity.findViewById(id);
+			if (row != null) {
+				row.setVisibility(View.GONE);
+			}
+		}
 	}
 
 	@UiThread

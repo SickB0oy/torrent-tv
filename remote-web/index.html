@@ -275,7 +275,14 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
   background: var(--soft); color: var(--ink); border-radius: 8px; padding: 1px 8px; font-weight: 700; font-size: 13px;
 }
 .res-meta .seed { color: var(--done); font-weight: 700; }
-.res-meta .free { background: var(--done); color: #fff; border-radius: 8px; padding: 1px 8px; font-weight: 800; font-size: 13px; }
+.qtag { background: var(--soft); color: var(--ink); border-radius: 7px; padding: 1px 7px; font-weight: 800; font-size: 12px; }
+.av { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
+.av i { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+.av-hi { color: var(--done); } .av-mid { color: #C98A00; } .av-low { color: #E26A2C; } .av-none { color: var(--error); }
+.trk-name { font-size: 12px; font-weight: 700; opacity: .8; }
+.row-tags { white-space: nowrap; }
+.row-tags .qtag { font-size: 11px; vertical-align: 2px; }
+.res-raw, .row-raw { color: var(--muted); font-size: 12px; margin-top: 6px; overflow-wrap: anywhere; opacity: .8; }
 .res .actions { margin-top: 12px; }
 #searchTrk { grid-column: 1 / -1; }
 .src a.site { color: var(--indigo); font-weight: 700; font-size: 13px; text-decoration: none; white-space: nowrap; }
@@ -287,6 +294,9 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
 }
 .trk-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
 .trk-foot a { color: var(--indigo); font-size: 13px; font-weight: 700; }
+.trk-title { font-weight: 800; font-size: 16px; }
+.trk-adv summary { color: var(--muted); font-size: 13px; font-weight: 700; cursor: pointer; }
+.trk-adv[open] { display: grid; gap: 8px; }
 .group > small { display: block; color: var(--muted); font-size: 13px; }
 .trk .keyok { color: var(--done); font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .trk .keyok button { border: 0; background: none; color: var(--indigo); font-weight: 700; padding: 0; font-size: 13px; }
@@ -319,12 +329,6 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     <button class="icon-btn" id="openSettings" data-i18n-label="settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
     </button>
-    <button class="icon-btn" id="pauseAll" data-i18n-label="pauseAll">
-      <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg>
-    </button>
-    <button class="icon-btn" id="resumeAll" data-i18n-label="resumeAll">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
-    </button>
   </div>
 
   <div class="speed" aria-live="polite">
@@ -348,7 +352,6 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     <div class="tabs" role="tablist">
       <button class="tab" id="tabTorrents" role="tab" aria-selected="true" data-i18n="tabTorrents"></button>
       <button class="tab" id="tabSearch" role="tab" aria-selected="false" data-i18n="tabSearch"></button>
-      <button class="tab" id="tabFree" role="tab" aria-selected="false" data-i18n="tabFree"></button>
     </div>
     <div class="filters" role="group" data-i18n-aria="filterTorrents" id="filters"></div>
     <div class="search-row" id="localSearch">
@@ -424,6 +427,13 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
           <option value="en">English</option>
           <option value="de">Deutsch</option>
         </select>
+      </div>
+    </section>
+    <section class="group">
+      <h3 data-i18n="gAll"></h3>
+      <div class="actions">
+        <button type="button" class="btn" id="pauseAll" data-i18n="pauseAll"></button>
+        <button type="button" class="btn" id="resumeAll" data-i18n="resumeAll"></button>
       </div>
     </section>
     <div id="setBody" class="loading"></div>
@@ -518,6 +528,14 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       keyChange: "Changer",
       saving: "Enregistrement…",
       latest: "Dernières sorties",
+      sPop: "Popularité",
+      sRecent: "Récent",
+      avHigh: "Très disponible",
+      avMid: "Disponible",
+      avLow: "Peu disponible",
+      avNone: "Indisponible",
+      advanced: "Avancé",
+      gAll: "Tous les torrents",
       sortLbl: "TRIER",
       sAge: "Âge",
       sSeeders: "Seeders",
@@ -526,8 +544,6 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       sGrabs: "Complétés",
       sName: "Nom",
       nGrabs: "{0} complétés",
-      tabFree: "Freeleech",
-      noFree: "Aucun torrent freeleech parmi ces résultats",
       allTrackers: "Tous les trackers",
       nSources: "{0} sources",
       siteShort: "Voir ↗"
@@ -600,6 +616,14 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       keyChange: "Change",
       saving: "Saving…",
       latest: "Latest releases",
+      sPop: "Popularity",
+      sRecent: "Recent",
+      avHigh: "Widely available",
+      avMid: "Available",
+      avLow: "Few sources",
+      avNone: "Unavailable",
+      advanced: "Advanced",
+      gAll: "All torrents",
       sortLbl: "SORT",
       sAge: "Age",
       sSeeders: "Seeders",
@@ -608,8 +632,6 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       sGrabs: "Completed",
       sName: "Name",
       nGrabs: "{0} completed",
-      tabFree: "Freeleech",
-      noFree: "No freeleech torrent in these results",
       allTrackers: "All trackers",
       nSources: "{0} sources",
       siteShort: "View ↗"
@@ -682,6 +704,14 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       keyChange: "Ändern",
       saving: "Wird gespeichert…",
       latest: "Neueste Veröffentlichungen",
+      sPop: "Beliebtheit",
+      sRecent: "Neueste",
+      avHigh: "Sehr verfügbar",
+      avMid: "Verfügbar",
+      avLow: "Wenig Quellen",
+      avNone: "Nicht verfügbar",
+      advanced: "Erweitert",
+      gAll: "Alle Torrents",
       sortLbl: "SORTIEREN",
       sAge: "Alter",
       sSeeders: "Seeder",
@@ -690,8 +720,6 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       sGrabs: "Abgeschlossen",
       sName: "Name",
       nGrabs: "{0} abgeschlossen",
-      tabFree: "Freeleech",
-      noFree: "Kein Freeleech-Torrent in diesen Ergebnissen",
       allTrackers: "Alle Tracker",
       nSources: "{0} Quellen",
       siteShort: "Ansehen ↗"
@@ -786,6 +814,66 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       if (e && e.name === "AbortError") throw new Error(t("eTimeout"));
       throw e;
     });
+  }
+
+  /* ---------- Readable release names ---------- */
+  // "Les.Carnets.De.L.Apothicaire.S03E06.VOSTFR.1080p.WEB.AAC.2.0.x264-Raws"
+  //   -> { title: "Les Carnets De L Apothicaire", ep: "S03E06", tags: ["1080p", "VOSTFR"] }
+  var RX_EP = /^(S\d{1,2}(E\d{1,3})?(-?E\d{1,3})?|\d{1,2}x\d{2})$/i;
+  var RX_YEAR = /^(19[2-9]\d|20[0-4]\d)$/;
+  var RX_RES = /^(480p|540p|576p|720p|1080p|1080i|2160p|4k|uhd)$/i;
+  var LANGS = { MULTI: "MULTi", VOSTFR: "VOSTFR", VOST: "VOST", FRENCH: "VF", TRUEFRENCH: "VFF", VFF: "VFF",
+    VFQ: "VFQ", VF: "VF", VFI: "VF", VOF: "VOF", SUBFRENCH: "VOSTFR", VO: "VO" };
+  var RX_JUNK = /^(web|web-?dl|webrip|bluray|blu-ray|bdrip|brrip|remux|hdtv|hdrip|dvdrip|dvd|hdlight|4klight|light|mhd|hdr|hdr10|dv|dolby|atmos|x264|x265|h264|h265|hevc|avc|aac|ac3|eac3|dts|ddp|dd|truehd|flac|opus|10bit|8bit|proper|repack|complete|integrale|intégrale|internal|custom|extended|unrated|imax|repost)$/i;
+  function prettyName(raw) {
+    var name = String(raw || "").replace(/\.(mkv|mp4|avi|ts|m4v)$/i, "");
+    // dots between letters are separators, keep "5.1" or "2.0"
+    // keep "5.1" or "2.0" (audio), split everything else on dots
+    var words = name.replace(/(^|\D)(\d)\.(\d)(?=\D|$)/g, "$1$2\u0001$3").replace(/[._]+/g, " ")
+      .replace(/\u0001/g, ".").replace(/\s+/g, " ").trim().split(" ");
+    var title = [], ep = "", year = "", tags = [], seenTag = {}, stop = false;
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i].replace(/^[\[(]+|[\])]+$/g, ""), up = w.toUpperCase().replace(/-.*$/, "");
+      if (!w) continue;
+      // "Blade Runner 2049 2017": the first of two years belongs to the title
+      var nextYear = i + 1 < words.length && RX_YEAR.test(words[i + 1]);
+      var isEp = RX_EP.test(w), isYear = RX_YEAR.test(w) && title.length > 0 && !(nextYear && !stop), isRes = RX_RES.test(w),
+          lang = LANGS[up], junk = RX_JUNK.test(w.replace(/-.*$/, ""));
+      if (!stop && (isEp || isYear || isRes || lang || junk)) stop = true;
+      if (!stop) { title.push(w); continue; }
+      if (isEp && !ep) ep = w.toUpperCase();
+      else if (isYear && !year) year = w;
+      else if (isRes) { var r = /2160p|4k|uhd/i.test(w) ? "4K" : w.toLowerCase(); if (!seenTag[r]) { seenTag[r] = 1; tags.push(r); } }
+      else if (lang && !seenTag[lang]) { seenTag[lang] = 1; tags.push(lang); }
+      else if (/^hdr/i.test(w) && !seenTag.HDR) { seenTag.HDR = 1; tags.push("HDR"); }
+    }
+    var t2 = title.join(" ").replace(/\s*-\s*$/, "");
+    if (!t2) t2 = String(raw);
+    return { title: t2, ep: ep, year: year, tags: tags };
+  }
+  function prettyTitle(p) {
+    return p.title + (p.ep ? " — " + p.ep : "") + (p.year ? " (" + p.year + ")" : "");
+  }
+  function tagChips(p) {
+    return p.tags.map(function (x) { return '<span class="qtag">' + esc(x) + '</span>'; }).join("");
+  }
+
+  // Seeders -> availability a beginner understands
+  function availability(seeders) {
+    if (seeders == null || seeders < 0) return null;
+    if (seeders >= 20) return { cls: "av-hi", key: "avHigh" };
+    if (seeders >= 5) return { cls: "av-mid", key: "avMid" };
+    if (seeders >= 1) return { cls: "av-low", key: "avLow" };
+    return { cls: "av-none", key: "avNone" };
+  }
+  function ago(ts) {
+    if (!ts) return "";
+    var d = Math.round((Date.now() / 1000 - ts) / 60), rtf;
+    try { rtf = new Intl.RelativeTimeFormat(LOCALES[lang], { numeric: "auto" }); } catch (e) { return date(ts); }
+    if (d < 60) return rtf.format(-Math.max(1, d), "minute");
+    if (d < 1440) return rtf.format(-Math.round(d / 60), "hour");
+    if (d < 43200) return rtf.format(-Math.round(d / 1440), "day");
+    return date(ts);
   }
 
   /* ---------- Formatting ---------- */
@@ -906,7 +994,8 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       var isOpen = !!open[x.id];
       return '<li class="row ' + d.cls + (isOpen ? " open" : "") + '" data-id="' + x.id + '">' +
         '<button class="row-head" aria-expanded="' + isOpen + '">' +
-          '<div class="name">' + esc(x.name) + '</div>' +
+          '<div class="name">' + esc(prettyTitle(prettyName(x.name))) +
+            (prettyName(x.name).tags.length ? ' <span class="row-tags">' + tagChips(prettyName(x.name)) + '</span>' : '') + '</div>' +
           '<div class="state"><span class="dot"></span><strong>' + esc(d.label) + '</strong>' +
             (d.detail ? '<span>' + esc(d.detail) + '</span>' : '') + '</div>' +
           '<div class="progress"><div class="track"><div class="fill" style="width:' + Math.min(100, d.pct) + '%"></div></div>' +
@@ -916,11 +1005,11 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
           '<dl class="facts">' +
             '<div><dt>' + t("size") + '</dt><dd>' + size(x.sizeWhenDone || x.totalSize) + '</dd></div>' +
             '<div><dt>' + t("remaining") + '</dt><dd>' + size(x.leftUntilDone) + '</dd></div>' +
-            '<div><dt>' + t("peers") + '</dt><dd>' + t("peersOf", x.peersSendingToUs, x.peersConnected) + '</dd></div>' +
             '<div><dt>' + t("added") + '</dt><dd>' + date(x.addedDate) + '</dd></div>' +
             '<div class="wide"><dt>' + t("folder") + '</dt><dd>' + esc(x.downloadDir || "—") + '</dd></div>' +
             (x.error > 0 ? '<div class="wide"><dt>' + t("stError") + '</dt><dd>' + esc(x.errorString) + '</dd></div>' : '') +
           '</dl>' +
+          '<div class="row-raw">' + esc(x.name) + '</div>' +
           '<div class="actions">' +
             (paused
               ? '<button class="btn primary" data-act="start">' + t("resume") + '</button>'
@@ -1293,7 +1382,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     var prev = mode;
     mode = m;
     var s = m !== "torrents";
-    ["Torrents", "Search", "Free"].forEach(function (k) {
+    ["Torrents", "Search"].forEach(function (k) {
       document.getElementById("tab" + k).setAttribute("aria-selected",
         String(m === k.toLowerCase() || (k === "Torrents" && m === "torrents")));
     });
@@ -1306,11 +1395,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     document.getElementById("openAdd").hidden = s;
     document.getElementById("searchTrk").hidden = !s || sTrackerNames().length < 2;
     if (!s) return;
-    if (m !== "search" && (prev === "search" || prev === "torrents") && sQuery) {
-      // Freeleech: start from the latest releases
-      document.getElementById("sq").value = "";
-      if (!sBusy) runSearch();
-    } else if (!sResults && !sBusy) {
+    if (!sResults && !sBusy) {
       // First time: show the latest releases right away
       runSearch();
     } else {
@@ -1320,7 +1405,6 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
   }
   document.getElementById("tabTorrents").onclick = function () { setMode("torrents"); };
   document.getElementById("tabSearch").onclick = function () { setMode("search"); };
-  document.getElementById("tabFree").onclick = function () { setMode("free"); };
 
   /* ---------- Tracker search ---------- */
   var sCat = "all";
@@ -1366,12 +1450,9 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
   });
 
   var SORTS = [
-    ["date", "sAge", function (x) { return x.date || 0; }],
-    ["seeders", "sSeeders", function (x) { return x.seeders || 0; }],
-    ["leechers", "sLeechers", function (x) { return x.leechers || 0; }],
-    ["size", "sSize", function (x) { return x.size || 0; }],
-    ["grabs", "sGrabs", function (x) { return x.grabs || 0; }],
-    ["name", "sName", function (x) { return String(x.title).toLowerCase(); }]
+    ["seeders", "sPop", function (x) { return x.seeders || 0; }],
+    ["date", "sRecent", function (x) { return x.date || 0; }],
+    ["size", "sSize", function (x) { return x.size || 0; }]
   ];
   var sSort = "seeders", sDesc = true;
   try {
@@ -1393,7 +1474,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     if (!b) return;
     var k = b.getAttribute("data-s");
     if (k === sSort) sDesc = !sDesc;
-    else { sSort = k; sDesc = k !== "name"; }
+    else { sSort = k; sDesc = true; }
     try { localStorage.setItem("ttv.sort", JSON.stringify({ k: sSort, d: sDesc })); } catch (err) {}
     renderResults();
   });
@@ -1421,32 +1502,30 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     }
     var list = r.results.filter(function (x) {
       if (sTracker && x.tracker !== sTracker) return false;
-      if (mode === "free") return !!x.free;
       return true;
     });
     sortList(list);
     renderSortBar(list.length > 1);
     var head = list.length === 0 ? t("noResults") : list.length === 1 ? t("oneResult") : t("nResults", list.length);
-    if (mode === "free" && !list.length) head = t("noFree");
-    else if (mode === "free") head = t("tabFree") + " · " + head;
-    else if (!sQuery && list.length) head = t("latest") + " · " + head;
+    if (!sQuery && list.length) head = t("latest") + " · " + head;
     var warn = (r.errors || []).map(function (e) {
       return '<span class="warn">' + esc(e.tracker) + " : " + esc(errText(e.error)) + '</span>';
     }).join("");
     sStatus.innerHTML = esc(head) + warn;
     resultsEl.innerHTML = list.map(function (x) {
       var done = !!sAdded[x.ref];
+      var p = prettyName(x.title), av = availability(x.seeders);
+      var avTitle = x.seeders >= 0 ? t("nSeeders", x.seeders) + (x.leechers >= 0 ? " · " + t("nLeechers", x.leechers) : "") : "";
       return '<li class="res" data-ref="' + esc(x.ref) + '">' +
-        '<div class="res-title">' + esc(x.title) + '</div>' +
+        '<div class="res-title">' + esc(prettyTitle(p)) + '</div>' +
         '<div class="res-meta">' +
-          '<span class="badge">' + esc(x.tracker) + '</span>' +
-          (x.free ? '<span class="free">Freeleech</span>' : '') +
+          tagChips(p) +
           (x.size >= 0 ? '<span>' + size(x.size) + '</span>' : '') +
-          (x.seeders >= 0 ? '<span class="seed">▲ ' + esc(t("nSeeders", x.seeders)) + '</span>' : '') +
-          (x.leechers >= 0 ? '<span>▼ ' + esc(t("nLeechers", x.leechers)) + '</span>' : '') +
-          (x.date ? '<span>' + date(x.date) + '</span>' : '') +
-          (x.grabs > 0 ? '<span>✓ ' + esc(t("nGrabs", x.grabs)) + '</span>' : '') +
+          (av ? '<span class="av ' + av.cls + '" title="' + esc(avTitle) + '"><i></i>' + esc(t(av.key)) + '</span>' : '') +
+          (x.date ? '<span>' + esc(ago(x.date)) + '</span>' : '') +
+          '<span class="trk-name">' + esc(x.tracker) + '</span>' +
         '</div>' +
+        '<div class="res-raw">' + esc(x.title) + '</div>' +
         '<div class="actions">' +
           '<button class="btn primary" data-dl' + (done ? " disabled" : "") + '>' +
             esc(done ? t("addedOk") : t("download")) + '</button>' +
@@ -1506,9 +1585,13 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
   function renderTrackers() {
     trkList.innerHTML = trackers.map(function (x, i) {
       var page = KEY_PAGES[x.id];
+      var fields = '<label>' + esc(t("trkName")) + '<input data-f="name" value="' + esc(x.name) + '" autocomplete="off"></label>' +
+        '<label>' + esc(t("trkUrl")) + '<input data-f="url" type="url" value="' + esc(x.url) + '" spellcheck="false" autocomplete="off"></label>';
       return '<div class="trk" data-i="' + i + '">' +
-        '<label>' + esc(t("trkName")) + '<input data-f="name" value="' + esc(x.name) + '" autocomplete="off"></label>' +
-        '<label>' + esc(t("trkUrl")) + '<input data-f="url" type="url" value="' + esc(x.url) + '" spellcheck="false" autocomplete="off"></label>' +
+        (page
+          // Known tracker: name as a title, address hidden under "Advanced"
+          ? '<div class="trk-title">' + esc(x.name) + '</div><details class="trk-adv"><summary>' + esc(t("advanced")) + '</summary>' + fields + '</details>'
+          : fields) +
         (x.hasKey && !x.editKey
           ? '<div class="keyok">✓ ' + esc(t("keyOk")) + ' <button type="button" data-chg>' + esc(t("keyChange")) + '</button></div>'
           : '<label>' + esc(t("trkKey")) + '<input class="key" data-f="key" type="text" value="' + esc(x.key || "") +
