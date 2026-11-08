@@ -532,6 +532,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       keyChange: "Changer",
       saving: "Enregistrement…",
       latest: "Dernières sorties",
+      sRel: "Pertinence",
       sPop: "Popularité",
       sRecent: "Récent",
       avHigh: "Très disponible",
@@ -620,6 +621,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       keyChange: "Change",
       saving: "Saving…",
       latest: "Latest releases",
+      sRel: "Relevance",
       sPop: "Popularity",
       sRecent: "Recent",
       avHigh: "Widely available",
@@ -708,6 +710,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       keyChange: "Ändern",
       saving: "Wird gespeichert…",
       latest: "Neueste Veröffentlichungen",
+      sRel: "Relevanz",
       sPop: "Beliebtheit",
       sRecent: "Neueste",
       avHigh: "Sehr verfügbar",
@@ -1463,7 +1466,33 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     renderResults();
   });
 
+  // Relevance: how well the release name matches what was typed
+  function normWords(str) {
+    return String(str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, " ").trim();
+  }
+  function relevance(x) {
+    var q = normWords(sQuery);
+    if (!q) return 0;
+    var qWords = q.split(" ");
+    var full = " " + normWords(x.title) + " ";
+    var title = normWords(prettyName(x.title).title);   // name before year / quality
+    var score = 0, found = 0;
+    qWords.forEach(function (w) {
+      if (full.indexOf(" " + w + " ") >= 0) { score += 10; found++; }
+      else if (full.indexOf(" " + w) >= 0) score += 4;    // start of a longer word
+    });
+    if (found === qWords.length) score += 40;            // every word is there
+    if (full.indexOf(" " + q + " ") >= 0) score += 30;   // in the same order
+    if (title === q) score += 50;                        // exactly that title
+    else if (title.indexOf(q + " ") === 0) score += 20;  // title starts with it
+    // Fewer extra words in the title = closer match
+    score -= Math.min(15, Math.max(0, title.split(" ").length - qWords.length) * 3);
+    return score;
+  }
+
   var SORTS = [
+    ["relevance", "sRel", relevance],
     ["seeders", "sSeeders", function (x) { return x.seeders || 0; }],
     ["date", "sRecent", function (x) { return x.date || 0; }],
     ["size", "sSize", function (x) { return x.size || 0; }]
@@ -1471,13 +1500,15 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
   var sSort = "seeders", sDesc = true;
   try {
     var saved = JSON.parse(localStorage.getItem("ttv.sort") || "null");
-    if (saved && SORTS.some(function (o) { return o[0] === saved.k; })) { sSort = saved.k; sDesc = !!saved.d; }
+    if (saved && saved.k !== "relevance" && SORTS.some(function (o) { return o[0] === saved.k; })) { sSort = saved.k; sDesc = !!saved.d; }
   } catch (e) {}
   function renderSortBar(show) {
     var el = document.getElementById("sSort");
     el.hidden = !show;
     if (!show) return;
-    el.innerHTML = '<span class="lbl">' + esc(t("sortLbl")) + '</span>' + SORTS.map(function (o) {
+    el.innerHTML = '<span class="lbl">' + esc(t("sortLbl")) + '</span>' + SORTS.filter(function (o) {
+      return o[0] !== "relevance" || sQuery;
+    }).map(function (o) {
       var on = o[0] === sSort;
       return '<button type="button" data-s="' + o[0] + '" aria-pressed="' + on + '">' + esc(t(o[1])) +
         (on ? (sDesc ? " ↓" : " ↑") : "") + '</button>';
@@ -1489,7 +1520,9 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     var k = b.getAttribute("data-s");
     if (k === sSort) sDesc = !sDesc;
     else { sSort = k; sDesc = true; }
-    try { localStorage.setItem("ttv.sort", JSON.stringify({ k: sSort, d: sDesc })); } catch (err) {}
+    if (sSort !== "relevance") {
+      try { localStorage.setItem("ttv.sort", JSON.stringify({ k: sSort, d: sDesc })); } catch (err) {}
+    }
     renderResults();
   });
   function sortList(list) {
@@ -1548,9 +1581,18 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
   }
 
   var sQuery = "";
+  var sSavedSort = null;     // sort to come back to when the search is cleared
   function runSearch() {
     var q = document.getElementById("sq").value.trim();
     sQuery = q;
+    if (q) {
+      // A typed search: best matches first (the user can still change it)
+      if (sSort !== "relevance") sSavedSort = { k: sSort, d: sDesc };
+      sSort = "relevance"; sDesc = true;
+    } else if (sSort === "relevance") {
+      sSort = sSavedSort ? sSavedSort.k : "seeders";
+      sDesc = sSavedSort ? sSavedSort.d : true;
+    }
     sBusy = true; renderResults();
     ttv("/ttv/search", { q: q, cat: sCat }).then(function (r) {
       sResults = r;
