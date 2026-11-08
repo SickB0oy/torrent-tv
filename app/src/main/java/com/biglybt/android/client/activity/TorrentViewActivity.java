@@ -115,6 +115,13 @@ public class TorrentViewActivity
 				? R.layout.activity_torrent_view_tv : R.layout.activity_torrent_view;
 		setContentView(contentViewID);
 		if (!AndroidUtils.isTV(this)) {
+			// Torrent TV: on a phone, the screen stays on while the app is open,
+			// so remote access keeps working (the window flag ends when the app
+			// is left or closed)
+			getWindow().addFlags(
+					android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		}
+		if (!AndroidUtils.isTV(this)) {
 			// Torrent TV: filters are chips above the list now; the header bar
 			// only held the side menu button and the current filter
 			View header = findViewById(R.id.tvHeader);
