@@ -280,7 +280,14 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
 .av { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
 .av i { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
 .av-hi { color: var(--done); } .av-mid { color: #C98A00; } .av-low { color: #E26A2C; } .av-none { color: var(--error); }
-.trk-name { font-size: 12px; font-weight: 700; opacity: .8; }
+.trk-name { font-size: 13px; font-weight: 800; color: var(--ink); }
+.sheet { position: relative; }
+.dlg-x {
+  position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 12px;
+  border: 0; background: var(--soft); color: var(--ink); display: grid; place-items: center; cursor: pointer;
+}
+.dlg-x svg { width: 20px; height: 20px; }
+#setTitle { padding-right: 48px; }
 .row-tags { white-space: nowrap; }
 .row-tags .qtag { font-size: 11px; vertical-align: 2px; }
 .res-raw, .row-raw { color: var(--muted); font-size: 12px; margin-top: 6px; overflow-wrap: anywhere; opacity: .8; }
@@ -421,6 +428,9 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
 <dialog id="setDlg" class="settings" aria-labelledby="setTitle">
   <form class="sheet" id="setForm" method="dialog" novalidate>
     <h2 id="setTitle" data-i18n="settings"></h2>
+    <button type="button" class="dlg-x" id="setX" data-i18n-label="close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
     <p data-i18n="setHelp"></p>
     <section class="group">
       <div class="set">
@@ -449,7 +459,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     </section>
     <p class="form-err" id="setErr" role="alert" hidden></p>
     <div class="sheet-actions">
-      <button type="button" class="btn" id="setCancel" data-i18n="cancel"></button>
+      <button type="button" class="btn" id="setCancel" data-i18n="close"></button>
       <button type="submit" class="btn primary" id="setSave" data-i18n="save"></button>
     </div>
   </form>
@@ -532,6 +542,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       keyChange: "Changer",
       saving: "Enregistrement…",
       latest: "Dernières sorties",
+      close: "Fermer",
       sRel: "Pertinence",
       sPop: "Popularité",
       sRecent: "Récent",
@@ -621,6 +632,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       keyChange: "Change",
       saving: "Saving…",
       latest: "Latest releases",
+      close: "Close",
       sRel: "Relevance",
       sPop: "Popularity",
       sRecent: "Recent",
@@ -710,6 +722,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       keyChange: "Ändern",
       saving: "Wird gespeichert…",
       latest: "Neueste Veröffentlichungen",
+      close: "Schließen",
       sRel: "Relevanz",
       sPop: "Beliebtheit",
       sRecent: "Neueste",
@@ -1314,6 +1327,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       .catch(function (e) { setBody.textContent = t("readSetFail", e.message); });
   };
   document.getElementById("setCancel").onclick = function () { closeDialog(setDlg); };
+  document.getElementById("setX").onclick = function () { closeDialog(setDlg); };
 
   // Language applies right away, it is stored in this browser only
   document.getElementById("langSel").addEventListener("change", function () {
