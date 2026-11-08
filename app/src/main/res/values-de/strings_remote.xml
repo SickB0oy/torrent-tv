@@ -78,4 +78,5 @@
 	<string name="plus_qr_steps_nopw">1. Scannen Sie diesen QR-Code mit der Kamera Ihres Smartphones\n   (oder geben Sie %1$s ein)\n\nSmartphone oder Computer müssen im selben WLAN sein.</string>
 	<string name="plus_sequential">Während des Downloads ansehen</string>
 	<string name="plus_prefcat_advanced">Erweitert</string>
+	<string name="plus_battery_hint">⚠️ Bei ausgeschaltetem Bildschirm kann Ihr Smartphone Downloads und Fernzugriff stoppen. Tippen Sie hier und erlauben Sie Torrent TV, aktiv zu bleiben.</string>
 </resources>

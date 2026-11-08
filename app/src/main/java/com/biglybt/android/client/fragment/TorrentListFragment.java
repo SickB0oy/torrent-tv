@@ -227,6 +227,51 @@ public class TorrentListFragment
 		});
 	}
 
+	/**
+	 * Torrent TV: on a phone, until the app may stay active in the background,
+	 * a tap here opens the system screen that allows it. Without it, the phone
+	 * stops downloads and remote access a few minutes after the screen is off.
+	 */
+	private void updateBatteryHint(@NonNull View root) {
+		View hint = root.findViewById(R.id.plus_battery_hint);
+		FragmentActivity fa = getActivity();
+		if (hint == null || fa == null) {
+			return;
+		}
+		boolean show = false;
+		boolean restricted = false;
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M
+				&& !AndroidUtils.isTV(fa)) {
+			android.os.PowerManager pm = (android.os.PowerManager) fa.getSystemService(
+					android.content.Context.POWER_SERVICE);
+			show = pm != null && !pm.isIgnoringBatteryOptimizations(fa.getPackageName());
+			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+				android.app.ActivityManager am = (android.app.ActivityManager) fa.getSystemService(
+						android.content.Context.ACTIVITY_SERVICE);
+				restricted = am != null && am.isBackgroundRestricted();
+				show |= restricted;
+			}
+		}
+		hint.setVisibility(show ? View.VISIBLE : View.GONE);
+		final boolean r = restricted;
+		hint.setOnClickListener(v -> {
+			if (fa instanceof com.biglybt.android.client.AppCompatActivityM) {
+				com.biglybt.android.client.RemoteUtils.requestBatteryExemption(
+						(com.biglybt.android.client.AppCompatActivityM) fa, r);
+			}
+		});
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		View root = getView();
+		if (root != null) {
+			// Back from the battery settings screen
+			updateBatteryHint(root);
+		}
+	}
+
 	/** Remote access address, known once the banner is filled */
 	private String plusWebUrl;
 
@@ -251,6 +296,7 @@ public class TorrentListFragment
 				|| !session.getRemoteProfile().isLocalHost()) {
 			return;
 		}
+		updateBatteryHint(root);
 		View stop = root.findViewById(R.id.plus_service_stop);
 		if (stop != null && session.getRemoteProfile()
 				.getRemoteType() == com.biglybt.android.client.session.RemoteProfile.TYPE_CORE) {

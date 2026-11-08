@@ -81,4 +81,5 @@
 	<string name="plus_qr_steps_nopw">1. Scan this QR code with your phone\'s camera\n   (or type %1$s)\n\nPhone or computer must be on the same Wi-Fi.</string>
 	<string name="plus_sequential">Watch while downloading</string>
 	<string name="plus_prefcat_advanced">Advanced</string>
+	<string name="plus_battery_hint">⚠️ When the screen is off, your phone may stop downloads and remote access. Tap here and allow Torrent TV to stay active.</string>
 </resources>

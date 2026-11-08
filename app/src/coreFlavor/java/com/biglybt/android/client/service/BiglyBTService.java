@@ -743,6 +743,13 @@ public class BiglyBTService
 
 	private WifiManager.WifiLock wifiLock = null;
 
+	/**
+	 * Torrent TV: the "keep the processor awake" option only took a Wi-Fi lock.
+	 * With the screen off the processor could still go to sleep, which stopped
+	 * downloads and remote access. A partial wake lock keeps it running.
+	 */
+	private android.os.PowerManager.WakeLock cpuLock = null;
+
 	private BroadcastReceiver batteryReceiver = null;
 
 	@Thunk
@@ -1618,6 +1625,17 @@ public class BiglyBTService
 	}
 
 	private void acquirePowerLock() {
+		if ((cpuLock == null || !cpuLock.isHeld()) && AndroidUtils.hasPermisssion(
+				BiglyBTApp.getContext(), Manifest.permission.WAKE_LOCK)) {
+			android.os.PowerManager pm = (android.os.PowerManager) BiglyBTApp.getContext().getApplicationContext().getSystemService(
+					Context.POWER_SERVICE);
+			if (pm != null) {
+				cpuLock = pm.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK,
+						"TorrentTV:core");
+				cpuLock.setReferenceCounted(false);
+				cpuLock.acquire();
+			}
+		}
 		if (wifiLock == null || !wifiLock.isHeld()) {
 			if (!AndroidUtils.hasPermisssion(BiglyBTApp.getContext(),
 					Manifest.permission.WAKE_LOCK)) {
@@ -1647,6 +1665,12 @@ public class BiglyBTService
 
 	@Thunk
 	void releasePowerLock() {
+		if (cpuLock != null && cpuLock.isHeld()) {
+			try {
+				cpuLock.release();
+			} catch (RuntimeException ignore) {
+			}
+		}
 		if (wifiLock != null && wifiLock.isHeld()) {
 			try {
 				wifiLock.release();

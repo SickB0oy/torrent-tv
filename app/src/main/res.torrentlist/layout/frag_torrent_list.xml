@@ -44,6 +44,23 @@
 		tools:text="Piloter depuis mon téléphone ou mon PC"
 		tools:visibility="visible"/>
 
+	<!-- Torrent TV: shown while the phone may put the app to sleep -->
+	<TextView
+		android:id="@+id/plus_battery_hint"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginStart="12dp"
+		android:layout_marginTop="8dp"
+		android:layout_marginEnd="12dp"
+		android:background="@drawable/plus_battery_hint_bg"
+		android:focusable="true"
+		android:padding="12dp"
+		android:text="@string/plus_battery_hint"
+		android:textColor="#FF3A2600"
+		android:textSize="14sp"
+		android:visibility="gone"
+		tools:visibility="visible"/>
+
 	<!-- Torrent TV: stops the torrent service (red); the stopped screen has the
 	     green button that starts it again -->
 	<com.google.android.material.button.MaterialButton

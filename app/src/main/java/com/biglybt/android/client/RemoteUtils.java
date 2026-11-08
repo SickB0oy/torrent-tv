@@ -68,7 +68,7 @@ public class RemoteUtils
 	 * one-tap system prompt, falling back to the settings list.
 	 */
 	@android.annotation.SuppressLint("BatteryLife")
-	static void requestBatteryExemption(@NonNull AppCompatActivityM activity,
+	public static void requestBatteryExemption(@NonNull AppCompatActivityM activity,
 			boolean restricted) {
 		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
 			return;
