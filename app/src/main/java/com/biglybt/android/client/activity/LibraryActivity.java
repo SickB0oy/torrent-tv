@@ -230,8 +230,19 @@ public class LibraryActivity
 		input.setHint(current != null ? R.string.library_key_saved_hint
 				: R.string.library_key_hint);
 		LinearLayout box = new LinearLayout(this);
+		box.setOrientation(LinearLayout.VERTICAL);
 		int pad = (int) (20 * getResources().getDisplayMetrics().density);
 		box.setPadding(pad, pad / 2, pad, 0);
+		if (current != null) {
+			// Green confirmation that the saved key is in use
+			android.widget.TextView active = new android.widget.TextView(this);
+			active.setText(R.string.library_key_active);
+			active.setTextColor(0xFF1E9E70);
+			active.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 16);
+			active.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+			active.setPadding(0, 0, 0, pad / 2);
+			box.addView(active);
+		}
 		box.addView(input, new LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT));
