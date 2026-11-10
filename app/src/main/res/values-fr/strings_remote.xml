@@ -86,4 +86,5 @@
 	<string name="library_key_saved_hint">Clé enregistrée. Colle une nouvelle clé ici pour la remplacer.</string>
 	<string name="library_key_saved_message">Ta clé TMDB est enregistrée et masquée. Pour la changer, colle la nouvelle ci-dessous.</string>
 	<string name="library_key_remove">Supprimer la clé</string>
+	<string name="library_key_active">✓ Clé TMDB activée</string>
 </resources>

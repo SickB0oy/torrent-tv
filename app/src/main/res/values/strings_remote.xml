@@ -85,4 +85,5 @@
 	<string name="library_key_saved_hint">Key saved. Paste a new key here to replace it.</string>
 	<string name="library_key_saved_message">Your TMDB key is saved and hidden. To change it, paste the new one below.</string>
 	<string name="library_key_remove">Remove the key</string>
+	<string name="library_key_active">✓ TMDB key active</string>
 </resources>

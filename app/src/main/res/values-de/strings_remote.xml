@@ -82,4 +82,5 @@
 	<string name="library_key_saved_hint">Schlüssel gespeichert. Fügen Sie hier einen neuen ein, um ihn zu ersetzen.</string>
 	<string name="library_key_saved_message">Ihr TMDB-Schlüssel ist gespeichert und verborgen. Um ihn zu ändern, fügen Sie unten den neuen ein.</string>
 	<string name="library_key_remove">Schlüssel entfernen</string>
+	<string name="library_key_active">✓ TMDB-Schlüssel aktiv</string>
 </resources>
