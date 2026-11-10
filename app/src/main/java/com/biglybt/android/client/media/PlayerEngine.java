@@ -33,11 +33,51 @@ public final class PlayerEngine
 
 	private static LibVLC libVLC;
 
+	/** Subtitle size changed: next get() builds a new instance */
+	private static boolean stale;
+
+	private static final String PREFS = "player_prefs";
+
+	private static final String KEY_SUB_SIZE = "sub_size";
+
+	/** Small, normal, large, very large: libVLC "relative font size" (lower = bigger) */
+	private static final int[] SUB_REL_SIZES = {
+		20,
+		16,
+		12,
+		9
+	};
+
+	/** 0 small, 1 normal, 2 large, 3 very large */
+	public static int getSubtitleSize(@NonNull Context context) {
+		int v = context.getApplicationContext().getSharedPreferences(PREFS,
+				Context.MODE_PRIVATE).getInt(KEY_SUB_SIZE, 1);
+		return Math.max(0, Math.min(SUB_REL_SIZES.length - 1, v));
+	}
+
+	/** Saved; applies from the next video start (see {@link #get}) */
+	public static synchronized void setSubtitleSize(@NonNull Context context,
+			int size) {
+		context.getApplicationContext().getSharedPreferences(PREFS,
+				Context.MODE_PRIVATE).edit().putInt(KEY_SUB_SIZE, size).apply();
+		stale = true;
+	}
+
 	private PlayerEngine() {
 	}
 
 	@NonNull
 	public static synchronized LibVLC get(@NonNull Context context) {
+		if (stale && libVLC != null) {
+			// Options are fixed at creation: rebuild with the new subtitle size
+			try {
+				libVLC.release();
+			} catch (Throwable t) {
+				Log.w(TAG, "release", t);
+			}
+			libVLC = null;
+		}
+		stale = false;
 		if (libVLC == null) {
 			ArrayList<String> options = new ArrayList<>();
 			// Local files: short read-ahead, the disk is fast
@@ -47,6 +87,8 @@ public final class PlayerEngine
 			options.add("--audio-time-stretch");
 			// Most French subtitle files that aren't UTF-8 are Windows-1252
 			options.add("--subsdec-encoding=Windows-1252");
+			options.add("--freetype-rel-fontsize="
+					+ SUB_REL_SIZES[getSubtitleSize(context)]);
 			libVLC = new LibVLC(context.getApplicationContext(), options);
 		}
 		return libVLC;

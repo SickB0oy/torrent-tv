@@ -83,4 +83,16 @@
 	<string name="library_key_saved_message">Ihr TMDB-Schlüssel ist gespeichert und verborgen. Um ihn zu ändern, fügen Sie unten den neuen ein.</string>
 	<string name="library_key_remove">Schlüssel entfernen</string>
 	<string name="library_key_active">✓ TMDB-Schlüssel aktiv</string>
+	<string name="player_sub_size">Textgröße</string>
+	<string-array name="player_sub_sizes">
+		<item>Klein</item>
+		<item>Normal</item>
+		<item>Groß</item>
+		<item>Sehr groß</item>
+	</string-array>
+	<string name="plus_usb_title">USB-Laufwerk erkannt</string>
+	<string name="plus_usb_message">%1$s ist angeschlossen (%2$s frei).\n\nNeue Downloads darauf speichern? Der interne Speicher des Geräts ist mit Filmen schnell voll.</string>
+	<string name="plus_usb_yes">Laufwerk verwenden</string>
+	<string name="plus_usb_no">Nein</string>
+	<string name="plus_usb_done">Neue Downloads werden in %1$s gespeichert</string>
 </resources>

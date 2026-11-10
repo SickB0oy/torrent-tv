@@ -84,6 +84,9 @@ public class PlayerActivity
 
 	private boolean resumeDone;
 
+	/** Display mode chosen for this video (or nothing to change) */
+	private boolean frameRateDone;
+
 	/** Saved position the video was started at, in ms */
 	private long resumeFrom;
 
@@ -266,7 +269,11 @@ public class PlayerActivity
 					tvTime.setText(formatTime(event.getTimeChanged()));
 				}
 				break;
+			case MediaPlayer.Event.Vout:
+				matchFrameRate();
+				break;
 			case MediaPlayer.Event.Playing:
+				matchFrameRate();
 				btnPlay.setImageResource(R.drawable.ic_player_pause);
 				btnPlay.setContentDescription(getString(R.string.player_pause));
 				maybeResume();
@@ -432,8 +439,114 @@ public class PlayerActivity
 			return;
 		}
 		MediaPlayer.TrackDescription[] tracks = player.getSpuTracks();
-		showTrackDialog(R.string.player_subtitles, tracks, player.getSpuTrack(),
-				id -> player.setSpuTrack(id));
+		if (tracks == null || tracks.length == 0) {
+			Toast.makeText(this, R.string.player_no_tracks, Toast.LENGTH_SHORT).show();
+			return;
+		}
+		handler.removeCallbacks(hideControls);
+		String[] names = new String[tracks.length];
+		int checked = -1;
+		for (int i = 0; i < tracks.length; i++) {
+			names[i] = tracks[i].id == -1 ? getString(R.string.player_off)
+					: tracks[i].name;
+			if (tracks[i].id == player.getSpuTrack()) {
+				checked = i;
+			}
+		}
+		new MaterialAlertDialogBuilder(this).setTitle(
+				R.string.player_subtitles).setSingleChoiceItems(names, checked,
+						(d, which) -> {
+							player.setSpuTrack(tracks[which].id);
+							d.dismiss();
+							showControls();
+						}).setNeutralButton(R.string.player_sub_size,
+								(d, w) -> chooseSubtitleSize()).setOnCancelListener(
+										d -> showControls()).show();
+	}
+
+	/** Torrent TV: subtitle text size, kept for the next videos */
+	private void chooseSubtitleSize() {
+		String[] sizes = getResources().getStringArray(R.array.player_sub_sizes);
+		int current = com.biglybt.android.client.media.PlayerEngine.getSubtitleSize(
+				this);
+		new MaterialAlertDialogBuilder(this).setTitle(
+				R.string.player_sub_size).setSingleChoiceItems(sizes, current,
+						(d, which) -> {
+							d.dismiss();
+							if (which == current) {
+								showControls();
+								return;
+							}
+							com.biglybt.android.client.media.PlayerEngine.setSubtitleSize(
+									this, which);
+							// The player picks the new size when it starts again:
+							// restart at the same spot
+							savePosition();
+							recreate();
+						}).setOnCancelListener(d -> showControls()).show();
+	}
+
+	/**
+	 * Torrent TV: on a TV, switch the screen to a refresh rate that is a whole
+	 * multiple of the video's frame rate (24 fps film on 48/120/144 Hz…), so
+	 * camera pans don't judder. Same resolution, nothing done on phones.
+	 */
+	private void matchFrameRate() {
+		if (frameRateDone || player == null
+				|| android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M
+				|| !com.biglybt.android.client.AndroidUtils.isTV(this)) {
+			return;
+		}
+		float fps = videoFrameRate();
+		if (fps < 10 || fps > 121) {
+			return;
+		}
+		frameRateDone = true;
+		android.view.Display display = getWindowManager().getDefaultDisplay();
+		android.view.Display.Mode current = display.getMode();
+		if (isMultiple(current.getRefreshRate(), fps)) {
+			return;
+		}
+		android.view.Display.Mode best = null;
+		for (android.view.Display.Mode m : display.getSupportedModes()) {
+			if (m.getPhysicalWidth() != current.getPhysicalWidth()
+					|| m.getPhysicalHeight() != current.getPhysicalHeight()
+					|| !isMultiple(m.getRefreshRate(), fps)) {
+				continue;
+			}
+			// Lowest suitable rate: 24 Hz rather than 120 Hz for a 24 fps film
+			if (best == null || m.getRefreshRate() < best.getRefreshRate()) {
+				best = m;
+			}
+		}
+		if (best != null) {
+			WindowManager.LayoutParams lp = getWindow().getAttributes();
+			lp.preferredDisplayModeId = best.getModeId();
+			getWindow().setAttributes(lp);
+		}
+	}
+
+	private static boolean isMultiple(float refresh, float fps) {
+		float ratio = refresh / fps;
+		long whole = Math.round(ratio);
+		return whole >= 1 && Math.abs(ratio - whole) < 0.003f * whole;
+	}
+
+	/** Frame rate of the video track (libVLC), 0 if unknown */
+	private float videoFrameRate() {
+		try {
+			// Looked up by reflection: same code on every libVLC 3.x version
+			Object track = player.getClass().getMethod("getCurrentVideoTrack").invoke(
+					player);
+			if (track == null) {
+				return 0;
+			}
+			int num = track.getClass().getField("frameRateNum").getInt(track);
+			int den = track.getClass().getField("frameRateDen").getInt(track);
+			return den > 0 ? num / (float) den : 0;
+		} catch (Throwable t) {
+			return 0;
+		}
 	}
 
 	private interface TrackChooser

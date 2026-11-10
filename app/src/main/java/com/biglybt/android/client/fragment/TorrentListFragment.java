@@ -188,8 +188,7 @@ public class TorrentListFragment
 		View scroll = root.findViewById(R.id.plus_filters_scroll);
 		com.google.android.material.chip.ChipGroup group = root.findViewById(
 				R.id.plus_filters);
-		if (scroll == null || group == null
-				|| AndroidUtils.isTV(BiglyBTApp.getContext())) {
+		if (scroll == null || group == null) {
 			return;
 		}
 		scroll.setVisibility(View.VISIBLE);
@@ -270,6 +269,95 @@ public class TorrentListFragment
 			// Back from the battery settings screen
 			updateBatteryHint(root);
 		}
+		simplifyTvSideList();
+	}
+
+	/**
+	 * Torrent TV: on a TV the left panel keeps only its actions (and text
+	 * filter); sorting is fixed and the filters are the chips above the list.
+	 */
+	private void simplifyTvSideList() {
+		FragmentActivity fa = getActivity();
+		if (fa == null || !AndroidUtils.isTV(fa)) {
+			return;
+		}
+		int[] ids = {
+			R.id.sidesort_header,
+			R.id.sidesort_list,
+			R.id.sidetag_header,
+			R.id.sidetag_list
+		};
+		for (int id : ids) {
+			View v = fa.findViewById(id);
+			if (v != null) {
+				v.setVisibility(View.GONE);
+			}
+		}
+	}
+
+	/** USB drives already proposed while the app runs */
+	private static final java.util.Set<String> usbOffered = new java.util.HashSet<>();
+
+	/**
+	 * Torrent TV: a USB drive (or SD card) is plugged in and downloads still go
+	 * to the device's small internal memory: offer to use the drive. Asked once
+	 * per drive while the app runs; "No" is remembered for that drive.
+	 */
+	private void offerUsbDrive() {
+		FragmentActivity fa = getActivity();
+		if (fa == null || session == null
+				|| android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R) {
+			return;
+		}
+		com.biglybt.android.client.session.SessionSettings settings = session.getSessionSettingsClone();
+		String current = settings == null ? null : settings.getDownloadDir();
+		if (current == null) {
+			return;
+		}
+		android.os.storage.StorageManager sm = (android.os.storage.StorageManager) fa.getSystemService(
+				android.content.Context.STORAGE_SERVICE);
+		if (sm == null) {
+			return;
+		}
+		android.content.SharedPreferences prefs = fa.getSharedPreferences(
+				"plus_prefs", android.content.Context.MODE_PRIVATE);
+		for (android.os.storage.StorageVolume v : sm.getStorageVolumes()) {
+			java.io.File dir = v.getDirectory();
+			String id = v.getUuid();
+			if (dir == null || id == null || !v.isRemovable()
+					|| !android.os.Environment.MEDIA_MOUNTED.equals(v.getState())) {
+				continue;
+			}
+			if (current.startsWith(dir.getAbsolutePath())
+					|| prefs.getBoolean("usb_declined_" + id, false)
+					|| !usbOffered.add(id)) {
+				continue;
+			}
+			final java.io.File target = new java.io.File(dir, "Torrent TV");
+			String free = com.biglybt.util.DisplayFormatters.formatByteCountToKiBEtc(
+					dir.getUsableSpace());
+			new com.google.android.material.dialog.MaterialAlertDialogBuilder(fa).setTitle(
+					R.string.plus_usb_title).setMessage(
+							getString(R.string.plus_usb_message, v.getDescription(fa),
+									free)).setPositiveButton(R.string.plus_usb_yes,
+											(d, w) -> {
+												//noinspection ResultOfMethodCallIgnored
+												target.mkdirs();
+												com.biglybt.android.client.session.SessionSettings s = session.getSessionSettingsClone();
+												if (s == null) {
+													return;
+												}
+												s.setDownloadDir(target.getAbsolutePath());
+												session.updateSessionSettings(s);
+												android.widget.Toast.makeText(fa,
+														getString(R.string.plus_usb_done,
+																target.getAbsolutePath()),
+														android.widget.Toast.LENGTH_LONG).show();
+											}).setNegativeButton(R.string.plus_usb_no,
+													(d, w) -> prefs.edit().putBoolean(
+															"usb_declined_" + id, true).apply()).show();
+			return;
+		}
 	}
 
 	/** Remote access address, known once the banner is filled */
@@ -297,6 +385,7 @@ public class TorrentListFragment
 			return;
 		}
 		updateBatteryHint(root);
+		offerUsbDrive();
 		View stop = root.findViewById(R.id.plus_service_stop);
 		if (stop != null && session.getRemoteProfile()
 				.getRemoteType() == com.biglybt.android.client.session.RemoteProfile.TYPE_CORE) {

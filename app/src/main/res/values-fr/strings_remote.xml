@@ -87,4 +87,16 @@
 	<string name="library_key_saved_message">Ta clé TMDB est enregistrée et masquée. Pour la changer, colle la nouvelle ci-dessous.</string>
 	<string name="library_key_remove">Supprimer la clé</string>
 	<string name="library_key_active">✓ Clé TMDB activée</string>
+	<string name="player_sub_size">Taille du texte</string>
+	<string-array name="player_sub_sizes">
+		<item>Petite</item>
+		<item>Normale</item>
+		<item>Grande</item>
+		<item>Très grande</item>
+	</string-array>
+	<string name="plus_usb_title">Disque USB détecté</string>
+	<string name="plus_usb_message">%1$s est branché (%2$s libres).\n\nEnregistrer les nouveaux téléchargements dessus ? La mémoire interne de l\'appareil se remplit vite avec des films.</string>
+	<string name="plus_usb_yes">Utiliser le disque</string>
+	<string name="plus_usb_no">Non</string>
+	<string name="plus_usb_done">Les nouveaux téléchargements iront dans %1$s</string>
 </resources>
