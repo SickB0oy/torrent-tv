@@ -94,7 +94,7 @@
 		<item>Very large</item>
 	</string-array>
 	<string name="plus_usb_title">USB drive detected</string>
-	<string name="plus_usb_message">%1$s is plugged in (%2$s free).\n\nSave new downloads on it? The device's internal memory fills up quickly with movies.</string>
+	<string name="plus_usb_message">%1$s is plugged in (%2$s free).\n\nSave new downloads on it? The device\'s internal memory fills up quickly with movies.</string>
 	<string name="plus_usb_yes">Use the drive</string>
 	<string name="plus_usb_no">No</string>
 	<string name="plus_usb_done">New downloads will go to %1$s</string>
