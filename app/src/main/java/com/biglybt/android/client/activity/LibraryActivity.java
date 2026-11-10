@@ -220,31 +220,42 @@ public class LibraryActivity
 	/* ---------- TMDB key ---------- */
 
 	private void askToken() {
+		final String current = library.getToken();
 		EditText input = new EditText(this);
+		// Torrent TV: the key is never shown again once saved, and is hidden
+		// while typed or pasted
 		input.setInputType(InputType.TYPE_CLASS_TEXT
+				| InputType.TYPE_TEXT_VARIATION_PASSWORD
 				| InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-		input.setHint(R.string.library_key_hint);
-		String current = library.getToken();
-		if (current != null) {
-			input.setText(current);
-		}
+		input.setHint(current != null ? R.string.library_key_saved_hint
+				: R.string.library_key_hint);
 		LinearLayout box = new LinearLayout(this);
 		int pad = (int) (20 * getResources().getDisplayMetrics().density);
 		box.setPadding(pad, pad / 2, pad, 0);
 		box.addView(input, new LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT));
-		new MaterialAlertDialogBuilder(this).setTitle(R.string.library_key_title).setMessage(
-				R.string.library_key_message).setView(box).setPositiveButton(
-						R.string.library_key_save, (d, w) -> {
-							String token = input.getText().toString().trim();
-							if (token.isEmpty()) {
-								library.setToken(null);
-								updateEmpty();
-								return;
-							}
-							verifyAndSave(token);
-						}).setNegativeButton(android.R.string.cancel, null).show();
+		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(
+				this).setTitle(R.string.library_key_title).setMessage(
+						current != null ? R.string.library_key_saved_message
+								: R.string.library_key_message).setView(
+										box).setPositiveButton(R.string.library_key_save,
+												(d, w) -> {
+													String token = input.getText().toString().trim();
+													if (token.isEmpty()) {
+														// Nothing typed: keep the saved key
+														return;
+													}
+													verifyAndSave(token);
+												}).setNegativeButton(R.string.library_close,
+														null);
+		if (current != null) {
+			builder.setNeutralButton(R.string.library_key_remove, (d, w) -> {
+				library.setToken(null);
+				updateEmpty();
+			});
+		}
+		builder.show();
 	}
 
 	private void verifyAndSave(String token) {

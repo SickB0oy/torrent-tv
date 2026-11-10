@@ -83,4 +83,7 @@
 	<string name="plus_sequential">Regarder pendant le téléchargement</string>
 	<string name="plus_prefcat_advanced">Avancé</string>
 	<string name="plus_battery_hint">⚠️ Écran éteint, ton téléphone peut couper les téléchargements et la connexion à distance. Appuie ici et autorise Torrent TV à rester actif.</string>
+	<string name="library_key_saved_hint">Clé enregistrée. Colle une nouvelle clé ici pour la remplacer.</string>
+	<string name="library_key_saved_message">Ta clé TMDB est enregistrée et masquée. Pour la changer, colle la nouvelle ci-dessous.</string>
+	<string name="library_key_remove">Supprimer la clé</string>
 </resources>

@@ -82,4 +82,7 @@
 	<string name="plus_sequential">Watch while downloading</string>
 	<string name="plus_prefcat_advanced">Advanced</string>
 	<string name="plus_battery_hint">⚠️ When the screen is off, your phone may stop downloads and remote access. Tap here and allow Torrent TV to stay active.</string>
+	<string name="library_key_saved_hint">Key saved. Paste a new key here to replace it.</string>
+	<string name="library_key_saved_message">Your TMDB key is saved and hidden. To change it, paste the new one below.</string>
+	<string name="library_key_remove">Remove the key</string>
 </resources>
