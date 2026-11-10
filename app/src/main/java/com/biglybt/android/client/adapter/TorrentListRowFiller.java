@@ -150,6 +150,32 @@ public class TorrentListRowFiller
 			holder.pb.setSecondaryProgress(ratioPct);
 		}
 
+		// Torrent TV: wide progress bar, and the film poster when TMDB knows it
+		if (holder.bar != null) {
+			boolean downloading = pctDone >= 0 && pctDone < 1;
+			holder.bar.setVisibility(downloading ? View.VISIBLE : View.GONE);
+			if (downloading) {
+				holder.bar.setProgress((int) (pctDone * 10000));
+			}
+		}
+		final String posterUrl;
+		if (holder.ivPoster != null) {
+			final long posterFor = torrentID;
+			posterUrl = com.biglybt.android.client.media.TorrentPosters.get(
+					holder.itemView.getContext(), torrentName, url -> {
+						if (holder.torrentID == posterFor) {
+							showPoster(holder, url);
+						}
+					});
+			if (posterUrl != null) {
+				showPoster(holder, posterUrl);
+			} else {
+				hidePoster(holder);
+			}
+		} else {
+			posterUrl = null;
+		}
+
 		long error = MapUtils.getMapLong(item, TransmissionVars.FIELD_TORRENT_ERROR,
 				TransmissionVars.TR_STAT_OK);
 		boolean hasScrapeError = error == TransmissionVars.TR_STAT_TRACKER_ERROR
@@ -301,6 +327,23 @@ public class TorrentListRowFiller
 				}
 				if (id >= 0) {
 					text.append(resources.getString(id));
+				}
+				if (posterUrl != null) {
+					// The ring (percentage, time left) is hidden behind the poster
+					if (pctDone >= 1) {
+						text.setLength(0);
+						text.append(resources.getString(R.string.plus_row_ready));
+					} else if (pctDone >= 0) {
+						text.append(" · ").append(nfPct1.format(pctDone));
+						long etaSecs = MapUtils.getMapLong(item,
+								TransmissionVars.FIELD_TORRENT_ETA, -1);
+						if (etaSecs > 0 && etaSecs * 1000L < DateUtils.WEEK_IN_MILLIS) {
+							text.append(" · ").append(resources.getString(
+									R.string.plus_row_left,
+									DisplayFormatters.prettyFormatTimeDiffShort(resources,
+											etaSecs)));
+						}
+					}
 				}
 			} else {
 				if (status == TransmissionVars.TR_STATUS_CHECK_WAIT
@@ -464,6 +507,41 @@ public class TorrentListRowFiller
 				holder.btnAuth.setOnClickListener(
 						v -> authRequestListener.askForAuth(torrentID));
 			}
+		}
+	}
+
+	/** Torrent TV: poster in place of the progress ring */
+	static void showPoster(@NonNull TorrentListHolderItem holder,
+			@NonNull String url) {
+		if (holder.ivPoster == null) {
+			return;
+		}
+		if (!url.equals(holder.ivPoster.getTag())) {
+			holder.ivPoster.setTag(url);
+			com.squareup.picasso.Picasso.with(holder.ivPoster.getContext()).load(
+					url).fit().centerCrop().into(holder.ivPoster);
+		}
+		holder.ivPoster.setVisibility(View.VISIBLE);
+		if (holder.pb != null) {
+			holder.pb.setVisibility(View.INVISIBLE);
+		}
+		if (holder.ringText != null) {
+			holder.ringText.setVisibility(View.GONE);
+		}
+	}
+
+	static void hidePoster(@NonNull TorrentListHolderItem holder) {
+		if (holder.ivPoster == null
+				|| holder.ivPoster.getVisibility() == View.GONE) {
+			return;
+		}
+		com.squareup.picasso.Picasso.with(holder.ivPoster.getContext()).cancelRequest(
+				holder.ivPoster);
+		holder.ivPoster.setTag(null);
+		holder.ivPoster.setImageDrawable(null);
+		holder.ivPoster.setVisibility(View.GONE);
+		if (holder.ringText != null) {
+			holder.ringText.setVisibility(View.VISIBLE);
 		}
 	}
 }

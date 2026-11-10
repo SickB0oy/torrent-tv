@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- BiglyBT Plus remote access banner: brand gradient, lighter when focused (TV remote) or pressed -->
+<!-- Torrent TV remote access button: brand gradient, lighter when focused (TV remote) or pressed -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 	<item android:state_focused="true">
 		<shape>
+			<corners android:radius="18dp" />
 			<gradient android:angle="0" android:startColor="#FF5A8CFF" android:endColor="#FF9C66FF" />
 			<stroke android:width="2dp" android:color="#FFFFFFFF" />
 		</shape>
 	</item>
 	<item android:state_pressed="true">
 		<shape>
+			<corners android:radius="18dp" />
 			<gradient android:angle="0" android:startColor="#FF5A8CFF" android:endColor="#FF9C66FF" />
 		</shape>
 	</item>
 	<item>
 		<shape>
+			<corners android:radius="18dp" />
 			<gradient android:angle="0" android:startColor="#FF3D7BFF" android:endColor="#FF8A4DFF" />
 		</shape>
 	</item>

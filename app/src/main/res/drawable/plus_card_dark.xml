@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Torrent TV: torrent card, same look as the cards of the remote web page -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:state_focused="true">
+		<shape><corners android:radius="18dp" /><solid android:color="#FF23274A" /><stroke android:width="3dp" android:color="#FF9AA2FF" /></shape>
+	</item>
+	<item android:state_activated="true">
+		<shape><corners android:radius="18dp" /><solid android:color="#FF23274A" /><stroke android:width="2dp" android:color="#FF6C74E0" /></shape>
+	</item>
+	<item android:state_pressed="true">
+		<shape><corners android:radius="18dp" /><solid android:color="#FF20234A" /><stroke android:width="1dp" android:color="#FF2A2E52" /></shape>
+	</item>
+	<item>
+		<shape><corners android:radius="18dp" /><solid android:color="#FF1A1D38" /><stroke android:width="1dp" android:color="#FF2A2E52" /></shape>
+	</item>
+</selector>

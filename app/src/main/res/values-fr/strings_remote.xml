@@ -99,4 +99,9 @@
 	<string name="plus_usb_yes">Utiliser le disque</string>
 	<string name="plus_usb_no">Non</string>
 	<string name="plus_usb_done">Les nouveaux téléchargements iront dans %1$s</string>
+	<string name="library_downloads">Téléchargements</string>
+	<string name="library_section_continue">Continuer à regarder</string>
+	<string name="library_section_new">Nouveautés</string>
+	<string name="library_section_movies">Films</string>
+	<string name="library_section_series">Séries</string>
 </resources>

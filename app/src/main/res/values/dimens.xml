@@ -75,4 +75,5 @@
 	<dimen name="dlg_numberpicker_width">540dp</dimen>
 	<dimen name="dlg_datepicker_width">300dp</dimen>
 	<dimen name="dlg_datepicker_height">240dp</dimen>
+	<dimen name="plus_poster_h">135dp</dimen>
 </resources>

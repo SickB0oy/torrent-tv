@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Torrent TV: filter chips, same colors as the remote web page -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:state_checked="true" android:color="#FFECEDF8" />
+	<item android:color="#FF2A2E52" />
+</selector>

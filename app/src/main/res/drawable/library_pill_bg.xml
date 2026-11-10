@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Torrent TV: rounded button on the coloured header -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:state_focused="true">
+		<shape><corners android:radius="20dp" /><solid android:color="#55FFFFFF" /><stroke android:width="2dp" android:color="#FFFFFFFF" /></shape>
+	</item>
+	<item android:state_pressed="true">
+		<shape><corners android:radius="20dp" /><solid android:color="#44FFFFFF" /></shape>
+	</item>
+	<item>
+		<shape><corners android:radius="20dp" /><solid android:color="#26FFFFFF" /></shape>
+	</item>
+</selector>

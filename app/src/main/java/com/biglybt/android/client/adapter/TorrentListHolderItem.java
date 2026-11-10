@@ -65,6 +65,14 @@ class TorrentListHolderItem
 
 	final Button btnAuth;
 
+	/** Torrent TV: TMDB poster, shown in place of the progress ring */
+	final ImageView ivPoster;
+
+	final View ringText;
+
+	/** Torrent TV: wide progress bar under the texts */
+	final ProgressBar bar;
+
 	boolean animateFlip;
 
 	private final ViewGroup topRightArea;
@@ -96,6 +104,13 @@ class TorrentListHolderItem
 		topRightArea = rowView.findViewById(R.id.torrentrow_topright);
 		leftArea = rowView.findViewById(R.id.torrentrow_leftArea);
 		btnAuth = rowView.findViewById(R.id.torrentrow_folderauth);
+		ivPoster = rowView.findViewById(R.id.torrentrow_poster);
+		ringText = rowView.findViewById(R.id.torrentrow_ring_text);
+		bar = rowView.findViewById(R.id.torrentrow_bar);
+		if (ivPoster != null && VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
+			// Rounded corners, like the background shape
+			ivPoster.setClipToOutline(true);
+		}
 
 		if (tvTags != null && topRightArea != null && leftArea != null) {
 			OnLayoutChangeListener onLayoutChangeListener = (v, left, top, right,

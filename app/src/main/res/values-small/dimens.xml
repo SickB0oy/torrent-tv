@@ -13,4 +13,5 @@
 	<dimen name="torrentrow_ring_done_width">8dp</dimen>
 	<dimen name="torrentrow_ring_second_width">8dp</dimen>
 
+	<dimen name="plus_poster_h">90dp</dimen>
 </resources>

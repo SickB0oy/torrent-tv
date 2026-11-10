@@ -95,4 +95,9 @@
 	<string name="plus_usb_yes">Laufwerk verwenden</string>
 	<string name="plus_usb_no">Nein</string>
 	<string name="plus_usb_done">Neue Downloads werden in %1$s gespeichert</string>
+	<string name="library_downloads">Downloads</string>
+	<string name="library_section_continue">Weiterschauen</string>
+	<string name="library_section_new">Neu</string>
+	<string name="library_section_movies">Filme</string>
+	<string name="library_section_series">Serien</string>
 </resources>

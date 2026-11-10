@@ -98,4 +98,9 @@
 	<string name="plus_usb_yes">Use the drive</string>
 	<string name="plus_usb_no">No</string>
 	<string name="plus_usb_done">New downloads will go to %1$s</string>
+	<string name="library_downloads">Downloads</string>
+	<string name="library_section_continue">Continue watching</string>
+	<string name="library_section_new">New</string>
+	<string name="library_section_movies">Movies</string>
+	<string name="library_section_series">Series</string>
 </resources>

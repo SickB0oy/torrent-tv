@@ -29,6 +29,9 @@
 		android:nextFocusDown="@id/plus_service_stop"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
+		android:layout_marginStart="12dp"
+		android:layout_marginTop="10dp"
+		android:layout_marginEnd="12dp"
 		android:background="@drawable/plus_remote_banner_bg"
 		android:clickable="true"
 		android:focusable="true"
@@ -80,7 +83,7 @@
 		android:textSize="16sp"
 		android:visibility="gone"
 		app:backgroundTint="@color/service_red"
-		app:cornerRadius="14dp"
+		app:cornerRadius="18dp"
 		app:icon="@drawable/ic_power"
 		app:iconGravity="textStart"
 		app:iconTint="#FFFFFFFF"
@@ -109,7 +112,7 @@
 
 			<com.google.android.material.chip.Chip
 				android:id="@+id/plus_filter_all"
-				style="@style/Widget.MaterialComponents.Chip.Choice"
+				style="@style/PlusChip"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:checked="true"
@@ -117,21 +120,21 @@
 
 			<com.google.android.material.chip.Chip
 				android:id="@+id/plus_filter_active"
-				style="@style/Widget.MaterialComponents.Chip.Choice"
+				style="@style/PlusChip"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:text="@string/plus_filter_active"/>
 
 			<com.google.android.material.chip.Chip
 				android:id="@+id/plus_filter_done"
-				style="@style/Widget.MaterialComponents.Chip.Choice"
+				style="@style/PlusChip"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:text="@string/plus_filter_done"/>
 
 			<com.google.android.material.chip.Chip
 				android:id="@+id/plus_filter_paused"
-				style="@style/Widget.MaterialComponents.Chip.Choice"
+				style="@style/PlusChip"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:text="@string/plus_filter_paused"/>

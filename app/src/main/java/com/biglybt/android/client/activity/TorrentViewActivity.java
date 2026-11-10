@@ -101,6 +101,29 @@ public class TorrentViewActivity
 	@Thunk
 	BaseProgressIndicator progressBar;
 
+	/** Torrent TV: the library is shown once per app start on TV */
+	private static boolean libraryShownAtLaunch;
+
+	/**
+	 * Torrent TV: on a TV, the app opens on the films and series; the torrent
+	 * list ("Téléchargements") sits behind it. Not when the app was opened to
+	 * add a torrent.
+	 */
+	private void openLibraryOnTvLaunch() {
+		if (libraryShownAtLaunch || activityIntent == null
+				|| !AndroidUtils.isTV(this)) {
+			return;
+		}
+		libraryShownAtLaunch = true;
+		if (activityIntent.getData() != null
+				|| activityIntent.hasExtra(Intent.EXTRA_STREAM)
+				|| activityIntent.hasExtra(Intent.EXTRA_TEXT)) {
+			return;
+		}
+		LibraryActivity.open(this, null);
+		overridePendingTransition(0, 0);
+	}
+
 	@Override
 	protected void onCreateWithSession(Bundle savedInstanceState) {
 		setDefaultKeyMode(DEFAULT_KEYS_SEARCH_LOCAL);
@@ -130,6 +153,7 @@ public class TorrentViewActivity
 			}
 		}
 		setupActionBar();
+		openLibraryOnTvLaunch();
 
 		// setup view ids now because listeners below may trigger as soon as we
 		// get them

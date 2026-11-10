@@ -74,6 +74,14 @@ public class LibraryActivity
 
 	private RecyclerView grid;
 
+	/** What the grid shows: section titles (String) and videos (Item) */
+	private final ArrayList<Object> rows = new ArrayList<>();
+
+	/** Videos newer than this, not seen yet, go in "Nouveautés" */
+	private static final long NEW_MS = 14L * 24 * 60 * 60 * 1000;
+
+	private static final String KEY_DIRS = "last_dirs";
+
 	public static void open(@NonNull Context context,
 			@Nullable ArrayList<String> dirs) {
 		Intent i = new Intent(context, LibraryActivity.class);
@@ -122,6 +130,8 @@ public class LibraryActivity
 		btnEmptyAction = findViewById(R.id.library_empty_action);
 		progress = findViewById(R.id.library_progress);
 		findViewById(R.id.library_back).setOnClickListener(v -> finish());
+		findViewById(R.id.library_downloads).setOnClickListener(
+				v -> openDownloads());
 		findViewById(R.id.library_key).setOnClickListener(v -> askToken());
 		findViewById(R.id.library_refresh).setOnClickListener(v -> scan());
 		TextView credit = findViewById(R.id.library_credit);
@@ -133,8 +143,17 @@ public class LibraryActivity
 		grid = list;
 		int widthDp = (int) (getResources().getDisplayMetrics().widthPixels
 				/ getResources().getDisplayMetrics().density);
-		int span = Math.max(2, widthDp / 150);
-		list.setLayoutManager(new GridLayoutManager(this, span));
+		final int span = Math.max(2, widthDp / 150);
+		GridLayoutManager glm = new GridLayoutManager(this, span);
+		// Section titles take the whole width
+		glm.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+			@Override
+			public int getSpanSize(int position) {
+				return position < rows.size() && rows.get(position) instanceof String
+						? span : 1;
+			}
+		});
+		list.setLayoutManager(glm);
 		adapter = new Adapter();
 		list.setAdapter(adapter);
 
@@ -153,20 +172,21 @@ public class LibraryActivity
 		super.onResume();
 		// Watched / resume markers may have changed in the player
 		if (adapter != null) {
-			adapter.notifyDataSetChanged();
+			buildRows();
 		}
 	}
 
 	private void setItems(List<MediaLibrary.Item> list) {
 		items.clear();
 		items.addAll(list);
-		adapter.notifyDataSetChanged();
+		buildRows();
 		updateEmpty();
 		// TV remote: start on the first poster rather than the Back button
 		if (!focusedOnce && !items.isEmpty()) {
 			focusedOnce = true;
 			grid.post(() -> {
-				RecyclerView.ViewHolder first = grid.findViewHolderForAdapterPosition(0);
+				RecyclerView.ViewHolder first = grid.findViewHolderForAdapterPosition(
+						firstItemRow());
 				View current = getCurrentFocus();
 				if (first != null && (current == null
 						|| current.getId() == R.id.library_back)) {
@@ -174,6 +194,77 @@ public class LibraryActivity
 				}
 			});
 		}
+	}
+
+	/**
+	 * Sorts the videos into sections, each video in only one:
+	 * "Continuer à regarder", "Nouveautés", "Films", "Séries".
+	 */
+	private void buildRows() {
+		ArrayList<MediaLibrary.Item> cont = new ArrayList<>(), fresh = new ArrayList<>(),
+				movies = new ArrayList<>(), series = new ArrayList<>();
+		long now = System.currentTimeMillis();
+		for (MediaLibrary.Item it : items) {
+			boolean seen = watched(it);
+			if (!seen && resumeAt(it) > 0) {
+				cont.add(it);
+			} else if (!seen && now - it.modified < NEW_MS) {
+				fresh.add(it);
+			} else if (it.isEpisode() || "tv".equals(it.type)) {
+				series.add(it);
+			} else {
+				movies.add(it);
+			}
+		}
+		rows.clear();
+		addSection(R.string.library_section_continue, cont);
+		addSection(R.string.library_section_new, fresh);
+		addSection(R.string.library_section_movies, movies);
+		addSection(R.string.library_section_series, series);
+		adapter.notifyDataSetChanged();
+	}
+
+	private void addSection(int title, List<MediaLibrary.Item> list) {
+		if (list.isEmpty()) {
+			return;
+		}
+		rows.add(getString(title));
+		rows.addAll(list);
+	}
+
+	private int firstItemRow() {
+		for (int i = 0; i < rows.size(); i++) {
+			if (rows.get(i) instanceof MediaLibrary.Item) {
+				return i;
+			}
+		}
+		return 0;
+	}
+
+	/** Back to the torrent list, or open it if the library was opened alone */
+	private void openDownloads() {
+		if (isTaskRoot()) {
+			Intent i = new Intent(this, IntentHandler.class);
+			i.setAction(Intent.ACTION_MAIN);
+			startActivity(i);
+		}
+		finish();
+	}
+
+	/** Folders torrents are saved in, remembered for when the TV opens here */
+	@Nullable
+	private ArrayList<String> libraryDirs() {
+		ArrayList<String> dirs = getIntent().getStringArrayListExtra(EXTRA_DIRS);
+		SharedPreferences p = getSharedPreferences(MediaLibrary.PREFS, MODE_PRIVATE);
+		if (dirs != null && !dirs.isEmpty()) {
+			p.edit().putString(KEY_DIRS, TextUtils.join("\n", dirs)).apply();
+			return dirs;
+		}
+		String saved = p.getString(KEY_DIRS, null);
+		if (TextUtils.isEmpty(saved)) {
+			return dirs;
+		}
+		return new ArrayList<>(java.util.Arrays.asList(saved.split("\n")));
 	}
 
 	private void updateEmpty() {
@@ -202,7 +293,7 @@ public class LibraryActivity
 		scanning = true;
 		progress.setVisibility(View.VISIBLE);
 		tvStatus.setText(R.string.library_scanning);
-		ArrayList<String> dirs = getIntent().getStringArrayListExtra(EXTRA_DIRS);
+		ArrayList<String> dirs = libraryDirs();
 		new Thread(() -> {
 			List<MediaLibrary.Item> result = library.refresh(dirs,
 					update -> runOnUiThread(() -> setItems(update)));
@@ -398,7 +489,7 @@ public class LibraryActivity
 									Toast.makeText(this,
 											found ? R.string.library_fix_ok : R.string.library_not_found,
 											Toast.LENGTH_SHORT).show();
-									adapter.notifyDataSetChanged();
+									buildRows();
 								});
 							}, "TmdbFix").start();
 						}).setNegativeButton(android.R.string.cancel, null).show();
@@ -413,18 +504,36 @@ public class LibraryActivity
 	/* ---------- Grid ---------- */
 
 	private class Adapter
-		extends RecyclerView.Adapter<Holder>
+		extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	{
+		@Override
+		public int getItemViewType(int position) {
+			return rows.get(position) instanceof String ? 1 : 0;
+		}
+
 		@NonNull
 		@Override
-		public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-			return new Holder(LayoutInflater.from(parent.getContext()).inflate(
-					R.layout.item_library, parent, false));
+		public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent,
+				int viewType) {
+			LayoutInflater inf = LayoutInflater.from(parent.getContext());
+			if (viewType == 1) {
+				return new RecyclerView.ViewHolder(
+						inf.inflate(R.layout.item_library_section, parent, false)) {
+				};
+			}
+			return new Holder(inf.inflate(R.layout.item_library, parent, false));
 		}
 
 		@Override
-		public void onBindViewHolder(@NonNull Holder h, int position) {
-			MediaLibrary.Item it = items.get(position);
+		public void onBindViewHolder(@NonNull RecyclerView.ViewHolder vh,
+				int position) {
+			Object row = rows.get(position);
+			if (row instanceof String) {
+				((TextView) vh.itemView).setText((String) row);
+				return;
+			}
+			Holder h = (Holder) vh;
+			MediaLibrary.Item it = (MediaLibrary.Item) row;
 			h.title.setText(it.title);
 			h.subtitle.setText(it.isEpisode() ? it.episodeLabel()
 					: TextUtils.isEmpty(it.year) ? "" : it.year);
@@ -452,7 +561,7 @@ public class LibraryActivity
 
 		@Override
 		public int getItemCount() {
-			return items.size();
+			return rows.size();
 		}
 	}
 

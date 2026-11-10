@@ -55,7 +55,7 @@
 			android:textColor="#FFFFFFFF"
 			android:textSize="18sp"
 			app:backgroundTint="@color/service_green"
-			app:cornerRadius="16dp"
+			app:cornerRadius="18dp"
 			app:icon="@drawable/ic_power"
 			app:iconSize="26dp"
 			app:iconTint="#FFFFFFFF"

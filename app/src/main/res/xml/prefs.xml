@@ -29,6 +29,7 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:key="session_download"
+			android:icon="@drawable/pref_ic_download"
 			android:title="@string/preftitle_max_dl_speed"
 			tools:summary="Enabled at 100kb/s"/>
 
@@ -36,6 +37,7 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:key="session_upload"
+			android:icon="@drawable/pref_ic_upload"
 			android:title="@string/preftitle_max_ul_speed"
 			tools:summary="Enabled at 100kb/s"/>
 
@@ -50,6 +52,7 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:key="save_path"
+			android:icon="@drawable/pref_ic_folder"
 			android:title="@string/default_save_location"
 			tools:summary="Somewhere"
 			/>
@@ -59,6 +62,7 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:key="show_open_options"
+			android:icon="@drawable/pref_ic_tune"
 			android:summary="@string/prefsummary_show_open_options"
 			android:title="@string/preftitle_show_open_options"
 			/>
@@ -67,6 +71,7 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:key="ui_theme"
+			android:icon="@drawable/pref_ic_theme"
 			android:summaryOff="@string/prefsummary_theme_light"
 			android:summaryOn="@string/prefsummary_theme_dark"
 			android:switchTextOff="@string/prefswitch_theme_light"
@@ -76,12 +81,14 @@
 
 		<Preference
 			android:key="ui_language"
+			android:icon="@drawable/pref_ic_language"
 			android:title="@string/preftitle_language"/>
 	</PreferenceCategory>
 
 	<PreferenceCategory android:title="@string/prefcat_network">
 		<Preference
 			android:key="port_settings"
+			android:icon="@drawable/pref_ic_port"
 			android:title="@string/preftitle_port_settings"
 			tools:summary="Randomly assigned\nCurrently port 381112">
 		</Preference>
@@ -90,6 +97,7 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:key="remote_connection"
+			android:icon="@drawable/pref_ic_remote"
 			android:title="@string/preftitle_remote_settings"/>
 	</PreferenceCategory>
 
@@ -97,6 +105,7 @@
 		<Preference
 			android:id="@+id/action_about"
 			android:key="action_about"
+			android:icon="@drawable/pref_ic_info"
 			android:title="@string/action_about"/>
 	</PreferenceCategory>
 

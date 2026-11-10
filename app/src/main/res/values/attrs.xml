@@ -8,6 +8,10 @@
 	<attr name="login_textbubble_color" format="color|reference"/>
 
 	<attr name="list_selector_attr" format="reference"/>
+	<attr name="plus_card_bg" format="reference"/>
+	<attr name="plus_chip_bg" format="reference"/>
+	<attr name="plus_chip_text" format="reference"/>
+	<attr name="plus_chip_stroke" format="reference"/>
 	<attr name="singlelist_selector_attr" format="reference"/>
 
 	<attr name="bg_tag_type_0" format="color|reference"/>

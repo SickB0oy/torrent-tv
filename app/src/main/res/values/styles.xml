@@ -85,6 +85,10 @@
 		<item name="login_textbubble_color">@color/login_textbubble_color</item>
 
 		<item name="list_selector_attr">@drawable/list_selector</item>
+		<item name="plus_card_bg">@drawable/plus_card_light</item>
+		<item name="plus_chip_bg">@color/plus_chip_bg_light</item>
+		<item name="plus_chip_text">@color/plus_chip_text_light</item>
+		<item name="plus_chip_stroke">@color/plus_chip_stroke_light</item>
 		<item name="singlelist_selector_attr">@drawable/list_selector_single</item>
 
 		<item name="bg_tag_type_0">@color/bg_tag_type_0</item>
@@ -169,6 +173,10 @@
 		<item name="login_textbubble_color">#000000</item>
 		
 		<item name="list_selector_attr">@drawable/list_selector_dark</item>
+		<item name="plus_card_bg">@drawable/plus_card_dark</item>
+		<item name="plus_chip_bg">@color/plus_chip_bg_dark</item>
+		<item name="plus_chip_text">@color/plus_chip_text_dark</item>
+		<item name="plus_chip_stroke">@color/plus_chip_stroke_dark</item>
 		<item name="singlelist_selector_attr">@drawable/list_selector_single_dark</item>
 
 		<item name="bg_tag_type_0">#40ffffff</item>
@@ -536,4 +544,13 @@
     <style name="borderlessRipple" parent="Widget.MaterialComponents.TextView">
         <item name="android:foreground">?android:attr/selectableItemBackground</item>
     </style>
+	<!-- Torrent TV: filter chips like the remote web page -->
+	<style name="PlusChip" parent="@style/Widget.MaterialComponents.Chip.Choice">
+		<item name="chipBackgroundColor">?attr/plus_chip_bg</item>
+		<item name="android:textColor">?attr/plus_chip_text</item>
+		<item name="chipStrokeColor">?attr/plus_chip_stroke</item>
+		<item name="chipStrokeWidth">1dp</item>
+		<item name="checkedIconVisible">false</item>
+		<item name="chipMinHeight">40dp</item>
+	</style>
 </resources>

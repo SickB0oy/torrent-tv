@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.biglybt.android.widget.RecyclerRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?list_selector_attr"
+    android:layout_marginStart="10dp"
+    android:layout_marginLeft="10dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginEnd="10dp"
+    android:layout_marginRight="10dp"
+    android:layout_marginBottom="5dp"
+    android:background="?plus_card_bg"
     android:focusable="true"
     android:focusableInTouchMode="false"
-    android:paddingTop="5dp"
-    android:paddingBottom="5dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
     android:transitionName="TVtoTD"
     >
 
@@ -124,6 +131,21 @@
                 tools:text="Tag1 Tag2 Tag3 Tag4 Tag5 Tag6 Tagagagagagaga Tagoooo Tag Tag Tug Tig Tag Toog Titag TooTag"
                 />
 
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/torrentrow_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="2dp"
+                android:indeterminate="false"
+                android:max="10000"
+                android:visibility="gone"
+                app:indicatorColor="#FF4F5BEF"
+                app:trackColor="#334F5BEF"
+                app:trackCornerRadius="4dp"
+                app:trackThickness="8dp"
+                />
         </LinearLayout>
 
         <ProgressBar
@@ -147,7 +169,21 @@
             tools:secondaryProgress="4000"
             />
 
+        <ImageView
+            android:id="@+id/torrentrow_poster"
+            android:layout_width="@dimen/torrentrow_ring_size"
+            android:layout_height="@dimen/plus_poster_h"
+            android:layout_alignStart="@id/torrentrow_progress"
+            android:layout_alignLeft="@id/torrentrow_progress"
+            android:layout_alignTop="@id/torrentrow_progress"
+            android:background="@drawable/plus_poster_bg"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            />
+
         <LinearLayout
+            android:id="@+id/torrentrow_ring_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignStart="@id/torrentrow_progress"

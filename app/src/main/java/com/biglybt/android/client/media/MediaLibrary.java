@@ -361,6 +361,33 @@ public class MediaLibrary
 		return item.hasMetadata();
 	}
 
+	/**
+	 * Torrent TV: poster of a torrent, for the download list. Uses what the
+	 * library already matched (or the user corrected), else asks TMDB.
+	 *
+	 * @return TMDB poster path ("/abc.jpg"), or null when not found
+	 */
+	@WorkerThread
+	@Nullable
+	public String findPosterPath(@NonNull String torrentName) throws IOException {
+		for (Item it : loadCache()) {
+			if (it.posterPath != null && it.path != null
+					&& it.path.contains("/" + torrentName)) {
+				return it.posterPath;
+			}
+		}
+		String token = getToken();
+		if (token == null) {
+			return null;
+		}
+		Item it = new Item();
+		it.path = torrentName;
+		File f = new File(torrentName);
+		parseName(isVideo(f) ? f : new File(torrentName + ".mkv"), it);
+		lookup(token, it, it.guessedTitle, it.year);
+		return it.posterPath;
+	}
+
 	private static void sort(List<Item> items) {
 		Collections.sort(items, (a, b) -> Long.compare(b.modified, a.modified));
 	}
