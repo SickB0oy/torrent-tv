@@ -133,4 +133,5 @@
 	<string name="plus_password_now">Current password: %1$s</string>
 	<string name="plus_new_password_message">A new random password replaces the current one. Phones and computers will have to sign in again with it.</string>
 	<string name="plus_new_password_yes">Make a new one</string>
+	<string name="update_stopping">Pausing downloads before the update…</string>
 </resources>

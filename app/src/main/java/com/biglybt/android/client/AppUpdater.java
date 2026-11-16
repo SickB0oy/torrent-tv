@@ -251,6 +251,13 @@ public final class AppUpdater
 					Toast.makeText(app, R.string.update_failed, Toast.LENGTH_LONG).show();
 					return;
 				}
+				stopCoreThenInstall(activity, () -> launchInstaller(activity, app, apk));
+			});
+		}, "AppUpdater.download").start();
+	}
+
+	private static void launchInstaller(@NonNull Activity activity,
+			@NonNull Context app, @NonNull File apk) {
 				try {
 					Uri uri = FileProvider.getUriForFile(app,
 							app.getPackageName() + ".files", apk);
@@ -263,8 +270,105 @@ public final class AppUpdater
 					Log.w(TAG, "install", t);
 					Toast.makeText(app, R.string.update_failed, Toast.LENGTH_LONG).show();
 				}
+	}
+
+	/**
+	 * The installer kills the app at once: downloads stopped that way are
+	 * checked again from scratch when it restarts ("Vérification des
+	 * fichiers"). So the torrent service is shut down properly first (it saves
+	 * where each download is), then the installer opens. If the update is
+	 * cancelled, the service is started again when the app comes back.
+	 */
+	private static void stopCoreThenInstall(@NonNull Activity activity,
+			@NonNull Runnable install) {
+		if (!com.biglybt.android.util.BiglyCoreUtils.isCoreStarted()) {
+			install.run();
+			return;
+		}
+		TextView text = new TextView(activity);
+		text.setText(R.string.update_stopping);
+		int pad = (int) (24 * activity.getResources().getDisplayMetrics().density);
+		text.setPadding(pad, pad / 2, pad, 0);
+		final AlertDialog dlg = new MaterialAlertDialogBuilder(activity).setTitle(
+				R.string.update_title).setView(text).setCancelable(false).show();
+		com.biglybt.android.util.BiglyCoreUtils.shutdownCoreService();
+		final Context app = activity.getApplicationContext();
+		new Thread(() -> {
+			long end = System.currentTimeMillis() + 15000;
+			try {
+				Thread.sleep(800);
+				while (coreProcessAlive(app) && System.currentTimeMillis() < end) {
+					//noinspection BusyWait
+					Thread.sleep(300);
+				}
+			} catch (InterruptedException ignore) {
+			}
+			main.post(() -> {
+				try {
+					dlg.dismiss();
+				} catch (Throwable ignore) {
+				}
+				install.run();
+				restartCoreIfCancelled(activity);
 			});
-		}, "AppUpdater.download").start();
+		}, "AppUpdater.stopCore").start();
+	}
+
+	private static boolean coreProcessAlive(@NonNull Context context) {
+		android.app.ActivityManager am = (android.app.ActivityManager) context.getSystemService(
+				Context.ACTIVITY_SERVICE);
+		java.util.List<android.app.ActivityManager.RunningAppProcessInfo> procs = am == null
+				? null : am.getRunningAppProcesses();
+		if (procs == null) {
+			return false;
+		}
+		for (android.app.ActivityManager.RunningAppProcessInfo p : procs) {
+			if (p.processName != null && p.processName.endsWith(":core_service")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Back in the app without updating: the torrent service starts again */
+	private static void restartCoreIfCancelled(@NonNull Activity activity) {
+		final android.app.Application application = activity.getApplication();
+		application.registerActivityLifecycleCallbacks(
+				new android.app.Application.ActivityLifecycleCallbacks() {
+					@Override
+					public void onActivityResumed(@NonNull Activity a) {
+						application.unregisterActivityLifecycleCallbacks(this);
+						if (!ServiceSwitch.isStopped(a)) {
+							RemoteUtils.openRemoteList(a);
+						}
+					}
+
+					@Override
+					public void onActivityCreated(@NonNull Activity a,
+							@Nullable android.os.Bundle b) {
+					}
+
+					@Override
+					public void onActivityStarted(@NonNull Activity a) {
+					}
+
+					@Override
+					public void onActivityPaused(@NonNull Activity a) {
+					}
+
+					@Override
+					public void onActivityStopped(@NonNull Activity a) {
+					}
+
+					@Override
+					public void onActivitySaveInstanceState(@NonNull Activity a,
+							@NonNull android.os.Bundle b) {
+					}
+
+					@Override
+					public void onActivityDestroyed(@NonNull Activity a) {
+					}
+				});
 	}
 
 	@Nullable

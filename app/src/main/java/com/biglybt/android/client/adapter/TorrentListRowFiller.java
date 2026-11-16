@@ -170,7 +170,8 @@ public class TorrentListRowFiller
 			if (posterUrl != null) {
 				showPoster(holder, posterUrl);
 			} else {
-				hidePoster(holder);
+				// No poster (yet): a coloured tile instead of the old ring
+				showPlaceholder(holder);
 			}
 		} else {
 			posterUrl = null;
@@ -328,8 +329,8 @@ public class TorrentListRowFiller
 				if (id >= 0) {
 					text.append(resources.getString(id));
 				}
-				if (posterUrl != null) {
-					// The ring (percentage, time left) is hidden behind the poster
+				if (holder.ivPoster != null) {
+					// No ring any more: percentage and time left go on this line
 					if (pctDone >= 1) {
 						text.setLength(0);
 						text.append(resources.getString(R.string.plus_row_ready));
@@ -518,8 +519,35 @@ public class TorrentListRowFiller
 		}
 		if (!url.equals(holder.ivPoster.getTag())) {
 			holder.ivPoster.setTag(url);
+			holder.ivPoster.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+			holder.ivPoster.clearColorFilter();
+			holder.ivPoster.setBackgroundResource(R.drawable.plus_poster_bg);
 			com.squareup.picasso.Picasso.with(holder.ivPoster.getContext()).load(
 					url).fit().centerCrop().into(holder.ivPoster);
+		}
+		holder.ivPoster.setVisibility(View.VISIBLE);
+		if (holder.pb != null) {
+			holder.pb.setVisibility(View.INVISIBLE);
+		}
+		if (holder.ringText != null) {
+			holder.ringText.setVisibility(View.GONE);
+		}
+	}
+
+	/** Torrent TV: film tile in the poster's place, until TMDB finds one */
+	static void showPlaceholder(@NonNull TorrentListHolderItem holder) {
+		if (holder.ivPoster == null) {
+			return;
+		}
+		if (holder.ivPoster.getTag() != null
+				|| holder.ivPoster.getVisibility() != View.VISIBLE) {
+			com.squareup.picasso.Picasso.with(holder.ivPoster.getContext()).cancelRequest(
+					holder.ivPoster);
+			holder.ivPoster.setTag(null);
+			holder.ivPoster.setBackgroundResource(R.drawable.library_poster_placeholder);
+			holder.ivPoster.setScaleType(android.widget.ImageView.ScaleType.CENTER);
+			holder.ivPoster.setImageResource(R.drawable.ic_library);
+			holder.ivPoster.setColorFilter(0xFFFFFFFF);
 		}
 		holder.ivPoster.setVisibility(View.VISIBLE);
 		if (holder.pb != null) {

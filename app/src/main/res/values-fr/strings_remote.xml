@@ -134,4 +134,5 @@
 	<string name="plus_password_now">Mot de passe actuel : %1$s</string>
 	<string name="plus_new_password_message">Un nouveau mot de passe aléatoire remplace l\'actuel. Les téléphones et ordinateurs devront se reconnecter avec.</string>
 	<string name="plus_new_password_yes">En créer un nouveau</string>
+	<string name="update_stopping">Mise en pause des téléchargements avant la mise à jour…</string>
 </resources>
