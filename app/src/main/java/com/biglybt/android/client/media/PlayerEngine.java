@@ -40,7 +40,8 @@ public final class PlayerEngine
 
 	private static final String KEY_SUB_SIZE = "sub_size";
 
-	private static final String KEY_COMPAT_AUDIO = "compat_audio";
+	/** v2: on by default (TV speakers are stereo anyway) */
+	private static final String KEY_COMPAT_AUDIO = "compat_audio_v2";
 
 	private static final String KEY_SMOOTH = "smooth_mode";
 
@@ -67,7 +68,7 @@ public final class PlayerEngine
 	 */
 	public static boolean isCompatAudio(@NonNull Context context) {
 		return context.getApplicationContext().getSharedPreferences(PREFS,
-				Context.MODE_PRIVATE).getBoolean(KEY_COMPAT_AUDIO, false);
+				Context.MODE_PRIVATE).getBoolean(KEY_COMPAT_AUDIO, true);
 	}
 
 	/** Saved; applies from the next video start (see {@link #get}) */
