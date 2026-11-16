@@ -360,6 +360,10 @@ public class BiglyBTManager
 		// load it: less memory, CPU and background network use
 		COConfigurationManager.setParameter("PluginInfo.aercm.enabled", false);
 
+		// Torrent TV: name shown in the router's port forwarding list
+		COConfigurationManager.setParameter("Plugin.UPnP.upnp.descprefix",
+				"Torrent TV UPnP");
+
 		// Torrent TV: the desktop default write cache is 4 MB, far too small for
 		// 30+ MB/s downloads to a USB drive (many small writes). Size it from the
 		// heap Android gives this process, without overriding a user's choice.
