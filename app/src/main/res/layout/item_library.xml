@@ -8,7 +8,7 @@
 	android:clickable="true"
 	android:focusable="true"
 	android:orientation="vertical"
-	android:padding="4dp">
+	android:padding="5dp">
 
 	<FrameLayout
 		android:layout_width="match_parent"

@@ -594,6 +594,9 @@ public class LibraryActivity
 		Holder(View v) {
 			super(v);
 			poster = v.findViewById(R.id.item_poster);
+			// Rounded corners like the background: the focus ring's curve no
+			// longer shows the poster's square corner
+			poster.setClipToOutline(true);
 			fallback = v.findViewById(R.id.item_fallback);
 			title = v.findViewById(R.id.item_title);
 			subtitle = v.findViewById(R.id.item_subtitle);
