@@ -321,6 +321,9 @@ public class TorrentListFragment
 		}
 		android.content.SharedPreferences prefs = fa.getSharedPreferences(
 				"plus_prefs", android.content.Context.MODE_PRIVATE);
+		if (revertUnwritableDownloadDir(fa, sm, current)) {
+			return;
+		}
 		for (android.os.storage.StorageVolume v : sm.getStorageVolumes()) {
 			java.io.File dir = v.getDirectory();
 			String id = v.getUuid();
@@ -343,6 +346,10 @@ public class TorrentListFragment
 											(d, w) -> {
 												//noinspection ResultOfMethodCallIgnored
 												target.mkdirs();
+												if (!canWrite(target)) {
+													explainUnwritable(fa, v, id);
+													return;
+												}
 												com.biglybt.android.client.session.SessionSettings s = session.getSessionSettingsClone();
 												if (s == null) {
 													return;
@@ -358,6 +365,97 @@ public class TorrentListFragment
 															"usb_declined_" + id, true).apply()).show();
 			return;
 		}
+	}
+
+	/** Torrent TV: really creates a file, the only reliable test */
+	private static boolean canWrite(@NonNull java.io.File dir) {
+		try {
+			java.io.File f = java.io.File.createTempFile("ttv", ".tmp", dir);
+			//noinspection ResultOfMethodCallIgnored
+			f.delete();
+			return true;
+		} catch (Throwable t) {
+			return false;
+		}
+	}
+
+	/**
+	 * NTFS drives get a 16-character id; Android TVs mount them read-only.
+	 * FAT and exFAT ids look like "1A2B-3C4D".
+	 */
+	private static boolean looksNtfs(@Nullable String uuid) {
+		return uuid != null && uuid.matches("[0-9A-Fa-f]{16}");
+	}
+
+	/** Why the drive can't be used, and what to do */
+	private void explainUnwritable(@NonNull FragmentActivity fa,
+			@NonNull android.os.storage.StorageVolume v, @NonNull String id) {
+		if (!looksNtfs(id) && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R
+				&& !android.os.Environment.isExternalStorageManager()) {
+			// exFAT/FAT drive: only the "all files" permission is missing
+			new com.google.android.material.dialog.MaterialAlertDialogBuilder(fa).setTitle(
+					R.string.all_files_access_title).setMessage(
+							R.string.all_files_access_message).setPositiveButton(
+									R.string.all_files_access_open, (d, w) -> {
+										try {
+											startActivity(new android.content.Intent(
+													android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+													android.net.Uri.parse(
+															"package:" + fa.getPackageName())));
+										} catch (Throwable t) {
+											startActivity(new android.content.Intent(
+													android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION));
+										}
+										// Offer the drive again when back
+										usbOffered.remove(id);
+									}).setNegativeButton(R.string.plus_later, null).show();
+			return;
+		}
+		new com.google.android.material.dialog.MaterialAlertDialogBuilder(fa).setTitle(
+				R.string.plus_usb_readonly_title).setMessage(
+						getString(R.string.plus_usb_readonly_message,
+								v.getDescription(fa))).setPositiveButton(android.R.string.ok,
+										null).show();
+	}
+
+	/**
+	 * Torrent TV: downloads were sent to a drive the TV can't write to (NTFS,
+	 * or unplugged): back to the device's memory, so new torrents work.
+	 *
+	 * @return true if the folder was changed
+	 */
+	private boolean revertUnwritableDownloadDir(@NonNull FragmentActivity fa,
+			@NonNull android.os.storage.StorageManager sm, @NonNull String current) {
+		for (android.os.storage.StorageVolume v : sm.getStorageVolumes()) {
+			java.io.File dir = v.getDirectory();
+			if (dir == null || !v.isRemovable()
+					|| !current.startsWith(dir.getAbsolutePath() + "/")) {
+				continue;
+			}
+			java.io.File target = new java.io.File(current);
+			//noinspection ResultOfMethodCallIgnored
+			target.mkdirs();
+			if (canWrite(target)) {
+				return false;
+			}
+			java.io.File internal = android.os.Environment.getExternalStoragePublicDirectory(
+					android.os.Environment.DIRECTORY_DOWNLOADS);
+			com.biglybt.android.client.session.SessionSettings s = session.getSessionSettingsClone();
+			if (s == null) {
+				return false;
+			}
+			s.setDownloadDir(internal.getAbsolutePath());
+			session.updateSessionSettings(s);
+			String id = v.getUuid();
+			if (id != null) {
+				usbOffered.add(id);
+				explainUnwritable(fa, v, id);
+			}
+			android.widget.Toast.makeText(fa, R.string.plus_usb_reverted,
+					android.widget.Toast.LENGTH_LONG).show();
+			return true;
+		}
+		return false;
 	}
 
 	/** Remote access address, known once the banner is filled */

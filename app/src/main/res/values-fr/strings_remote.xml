@@ -108,4 +108,7 @@
 	<string name="player_audio_normal">Son multicanal</string>
 	<string name="player_audio_compat_toast">Son non pris en charge par la TV : passage en son compatible (stéréo)</string>
 	<string name="player_audio_normal_toast">Retour au son normal</string>
+	<string name="plus_usb_readonly_title">Disque en lecture seule</string>
+	<string name="plus_usb_readonly_message">La TV peut lire les films de %1$s mais pas écrire dessus : il est sûrement formaté en NTFS.\n\nPour y télécharger, formate-le en exFAT (sur un PC ou dans les paramètres de la TV). Le formatage efface tout son contenu.\n\nEn attendant, les téléchargements vont dans la mémoire de la TV.</string>
+	<string name="plus_usb_reverted">Impossible d\'écrire sur le disque USB : les téléchargements retournent dans la mémoire de la TV</string>
 </resources>

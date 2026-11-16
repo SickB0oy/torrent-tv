@@ -107,4 +107,7 @@
 	<string name="player_audio_normal">Surround sound</string>
 	<string name="player_audio_compat_toast">Sound not supported by this TV: switching to compatible sound (stereo)</string>
 	<string name="player_audio_normal_toast">Back to normal sound</string>
+	<string name="plus_usb_readonly_title">Read-only drive</string>
+	<string name="plus_usb_readonly_message">The TV can play films from %1$s but cannot write to it: it is probably formatted as NTFS.\n\nTo download to it, format it as exFAT (on a computer, or in the TV settings). Formatting erases everything on it.\n\nMeanwhile, downloads go to the TV\'s memory.</string>
+	<string name="plus_usb_reverted">The USB drive cannot be written to: downloads go to the TV\'s memory again</string>
 </resources>
