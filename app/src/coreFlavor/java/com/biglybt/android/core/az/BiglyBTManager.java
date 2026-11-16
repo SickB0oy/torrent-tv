@@ -364,6 +364,15 @@ public class BiglyBTManager
 		COConfigurationManager.setParameter("Plugin.UPnP.upnp.descprefix",
 				"Torrent TV UPnP");
 
+		// Torrent TV: a TV on a fast home connection, not a phone on 4G. The
+		// desktop limits (50 peers per torrent, 4 upload slots) leave speed on
+		// the table with well-seeded torrents. Raised only while still at the
+		// default, so a value changed from the remote page is kept.
+		raiseIfDefault("Max.Peer.Connections.Per.Torrent", 50, 120);
+		raiseIfDefault("Max.Peer.Connections.Total", 250, 500);
+		raiseIfDefault("Max Uploads", 4, 8);
+		raiseIfDefault("network.max.simultaneous.connect.attempts", 24, 40);
+
 		// Torrent TV: the desktop default write cache is 4 MB, far too small for
 		// 30+ MB/s downloads to a USB drive (many small writes). Size it from the
 		// heap Android gives this process, without overriding a user's choice.
@@ -1317,5 +1326,16 @@ public class BiglyBTManager
 		}
 
 		COConfigurationManager.save();
+	}
+
+	/** Torrent TV: sets a better default, keeping a value the user changed */
+	private static void raiseIfDefault(String key, int oldDefault, int value) {
+		try {
+			if (COConfigurationManager.getIntParameter(key) == oldDefault) {
+				COConfigurationManager.setParameter(key, value);
+			}
+		} catch (Throwable t) {
+			Log.e(TAG, "raiseIfDefault " + key, t);
+		}
 	}
 }
