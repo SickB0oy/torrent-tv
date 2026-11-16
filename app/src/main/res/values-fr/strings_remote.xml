@@ -130,4 +130,8 @@
 	<string name="library_delete_title">Supprimer « %1$s » ?</string>
 	<string name="library_delete_message">Le fichier sera effacé définitivement de l\'appareil. Le torrent d\'origine sera aussi retiré des téléchargements.</string>
 	<string name="library_deleted">« %1$s » supprimé</string>
+	<string name="plus_new_password">Nouveau mot de passe d\'accès à distance</string>
+	<string name="plus_password_now">Mot de passe actuel : %1$s</string>
+	<string name="plus_new_password_message">Un nouveau mot de passe aléatoire remplace l\'actuel. Les téléphones et ordinateurs devront se reconnecter avec.</string>
+	<string name="plus_new_password_yes">En créer un nouveau</string>
 </resources>

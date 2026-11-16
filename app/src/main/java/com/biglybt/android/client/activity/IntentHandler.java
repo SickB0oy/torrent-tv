@@ -161,11 +161,8 @@ public class IntentHandler
 				&& "coreFlavor".equals(com.biglybt.android.client.BuildConfig.FLAVOR_coreD)) {
 			// BiglyBT Plus: always open the BiglyBT running on this device, creating
 			// it on first launch. No account, login or remote profile screens.
-			if (Intent.ACTION_MAIN.equals(intent.getAction())) {
-				// Opened from the launcher: new random remote access password, so
-				// an old one seen or saved somewhere no longer works
-				com.biglybt.android.client.PlusRemoteInfo.newPassword();
-			}
+			// Torrent TV: the remote access password stays the same; a new one
+			// can be made in Settings, "New password"
 			if (com.biglybt.android.client.ServiceSwitch.isStopped(this)) {
 				boolean opensTorrent = intent.getData() != null
 						|| intent.hasExtra(Intent.EXTRA_STREAM)

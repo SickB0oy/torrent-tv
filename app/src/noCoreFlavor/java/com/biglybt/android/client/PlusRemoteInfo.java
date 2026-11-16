@@ -28,6 +28,11 @@ public class PlusRemoteInfo
 	public static void newPassword() {
 	}
 
+	@Nullable
+	public static String currentPassword() {
+		return null;
+	}
+
 	public void showQr(FragmentActivity activity) {
 	}
 }

@@ -126,4 +126,8 @@
 	<string name="library_delete_title">„%1$s“ löschen?</string>
 	<string name="library_delete_message">Die Datei wird endgültig vom Gerät gelöscht. Der zugehörige Torrent wird auch aus den Downloads entfernt.</string>
 	<string name="library_deleted">„%1$s“ gelöscht</string>
+	<string name="plus_new_password">Neues Fernzugriffs-Passwort</string>
+	<string name="plus_password_now">Aktuelles Passwort: %1$s</string>
+	<string name="plus_new_password_message">Ein neues zufälliges Passwort ersetzt das aktuelle. Smartphones und Computer müssen sich damit neu anmelden.</string>
+	<string name="plus_new_password_yes">Neues erstellen</string>
 </resources>

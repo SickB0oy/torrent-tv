@@ -129,4 +129,8 @@
 	<string name="library_delete_title">Delete “%1$s”?</string>
 	<string name="library_delete_message">The file will be erased from the device for good. The torrent it came from is removed from the downloads too.</string>
 	<string name="library_deleted">“%1$s” deleted</string>
+	<string name="plus_new_password">New remote access password</string>
+	<string name="plus_password_now">Current password: %1$s</string>
+	<string name="plus_new_password_message">A new random password replaces the current one. Phones and computers will have to sign in again with it.</string>
+	<string name="plus_new_password_yes">Make a new one</string>
 </resources>

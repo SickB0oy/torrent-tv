@@ -166,6 +166,11 @@
 				android:title="@string/action_remote_access_qr"/>
 
 		</PreferenceScreen>
+		<!-- Torrent TV: new remote access password, one click with the remote -->
+		<Preference
+			android:key="plus_new_password"
+			android:icon="@drawable/pref_ic_password"
+			android:title="@string/plus_new_password"/>
 
 	</PreferenceCategory>
 

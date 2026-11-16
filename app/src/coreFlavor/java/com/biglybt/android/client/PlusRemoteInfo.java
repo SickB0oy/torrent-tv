@@ -50,10 +50,16 @@ public class PlusRemoteInfo
 				ra.user, ra.reqPW ? ra.pw : null);
 	}
 
-	/** A new random password, each time the app is opened */
-	@WorkerThread
+	/** A new random password (Settings, "New password") */
 	public static void newPassword() {
 		CorePrefs.getInstance().newRemotePassword();
+	}
+
+	/** Current remote access password, null if none is asked */
+	@Nullable
+	public static String currentPassword() {
+		CoreRemoteAccessPreferences ra = CorePrefs.getInstance().getRemoteAccessPreferences();
+		return ra == null || !ra.reqPW ? null : ra.pw;
 	}
 
 	public void showQr(FragmentActivity activity) {

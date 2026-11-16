@@ -297,6 +297,24 @@ public class PrefFragmentHandler
 				return true;
 			}
 
+			case "plus_new_password": {
+				new com.google.android.material.dialog.MaterialAlertDialogBuilder(
+						activity).setTitle(R.string.plus_new_password).setMessage(
+								R.string.plus_new_password_message).setPositiveButton(
+										R.string.plus_new_password_yes, (d, w) -> {
+											com.biglybt.android.client.PlusRemoteInfo.newPassword();
+											String pw = com.biglybt.android.client.PlusRemoteInfo.currentPassword();
+											preference.setSummary(activity.getString(
+													R.string.plus_password_now, pw == null ? "" : pw));
+											android.widget.Toast.makeText(activity,
+													activity.getString(R.string.plus_password_now,
+															pw == null ? "" : pw),
+													android.widget.Toast.LENGTH_LONG).show();
+										}).setNegativeButton(android.R.string.cancel,
+												null).show();
+				return true;
+			}
+
 			case "plus_smooth_playback": {
 				boolean on = !com.biglybt.android.client.media.PlayerEngine.isSmooth(
 						activity);
@@ -487,6 +505,14 @@ public class PrefFragmentHandler
 				KEY_SHOW_OPEN_OPTIONS);
 		if (prefShowOpenOptions != null) {
 			prefShowOpenOptions.setChecked(ds.getBoolean(KEY_SHOW_OPEN_OPTIONS));
+		}
+
+		Preference prefNewPw = findPreference("plus_new_password");
+		if (prefNewPw != null) {
+			String pw = com.biglybt.android.client.PlusRemoteInfo.currentPassword();
+			prefNewPw.setVisible(pw != null);
+			prefNewPw.setSummary(activity.getString(R.string.plus_password_now,
+					pw == null ? "" : pw));
 		}
 
 		Preference prefSmooth = findPreference("plus_smooth_playback");
