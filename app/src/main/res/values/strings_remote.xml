@@ -110,4 +110,15 @@
 	<string name="plus_usb_readonly_title">Read-only drive</string>
 	<string name="plus_usb_readonly_message">The TV can play films from %1$s but cannot write to it: it is probably formatted as NTFS.\n\nTo download to it, format it as exFAT (on a computer, or in the TV settings). Formatting erases everything on it.\n\nMeanwhile, downloads go to the TV\'s memory.</string>
 	<string name="plus_usb_reverted">The USB drive cannot be written to: downloads go to the TV\'s memory again</string>
+	<string name="update_check">Check for updates</string>
+	<string name="update_current">Installed: %1$s</string>
+	<string name="update_checking">Checking for updates…</string>
+	<string name="update_none">Torrent TV is up to date</string>
+	<string name="update_failed">Could not check or download the update. Try again later.</string>
+	<string name="update_title">Update available</string>
+	<string name="update_message">Version %1$s is ready. Install it now?\n\nDownloads resume on their own afterwards.</string>
+	<string name="update_install">Install</string>
+	<string name="update_later">Later</string>
+	<string name="update_downloading">Downloading the update…</string>
+	<string name="update_permission">To install its updates, Torrent TV needs the permission to install apps. In the screen that opens, turn on the switch for Torrent TV, then come back.</string>
 </resources>

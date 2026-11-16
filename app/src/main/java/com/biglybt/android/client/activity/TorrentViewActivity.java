@@ -231,6 +231,10 @@ public class TorrentViewActivity
 	@Override
 	protected void onStart() {
 		super.onStart();
+		// Torrent TV: new version? (on a TV the library, opened on top, asks)
+		if (!AndroidUtils.isTV(this)) {
+			com.biglybt.android.client.AppUpdater.checkAuto(this);
+		}
 
 		// may be inside FragmentContainerView which doesn't expand in #onCreate like Fragment does
 		progressBar = findViewById(R.id.progress_spinner);

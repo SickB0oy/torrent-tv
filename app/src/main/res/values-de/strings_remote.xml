@@ -107,4 +107,15 @@
 	<string name="plus_usb_readonly_title">Laufwerk schreibgeschützt</string>
 	<string name="plus_usb_readonly_message">Der Fernseher kann Filme von %1$s abspielen, aber nicht darauf schreiben: Es ist wahrscheinlich mit NTFS formatiert.\n\nUm darauf herunterzuladen, formatieren Sie es als exFAT (am Computer oder in den TV-Einstellungen). Dabei wird alles gelöscht.\n\nBis dahin wird in den Speicher des Fernsehers heruntergeladen.</string>
 	<string name="plus_usb_reverted">Auf das USB-Laufwerk kann nicht geschrieben werden: Downloads gehen wieder in den Speicher des Fernsehers</string>
+	<string name="update_check">Nach Updates suchen</string>
+	<string name="update_current">Installiert: %1$s</string>
+	<string name="update_checking">Suche nach Updates…</string>
+	<string name="update_none">Torrent TV ist aktuell</string>
+	<string name="update_failed">Das Update konnte nicht geprüft oder geladen werden. Später erneut versuchen.</string>
+	<string name="update_title">Update verfügbar</string>
+	<string name="update_message">Version %1$s ist bereit. Jetzt installieren?\n\nDownloads laufen danach von selbst weiter.</string>
+	<string name="update_install">Installieren</string>
+	<string name="update_later">Später</string>
+	<string name="update_downloading">Update wird geladen…</string>
+	<string name="update_permission">Um Updates zu installieren, braucht Torrent TV die Berechtigung, Apps zu installieren. Aktivieren Sie im folgenden Bildschirm den Schalter für Torrent TV und kehren Sie dann zurück.</string>
 </resources>

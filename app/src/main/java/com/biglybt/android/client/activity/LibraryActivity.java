@@ -170,6 +170,7 @@ public class LibraryActivity
 	@Override
 	protected void onResume() {
 		super.onResume();
+		com.biglybt.android.client.AppUpdater.checkAuto(this);
 		// Watched / resume markers may have changed in the player
 		if (adapter != null) {
 			buildRows();

@@ -186,6 +186,10 @@
 
 	<PreferenceCategory android:title="@string/prefcat_info">
 		<Preference
+			android:key="plus_check_update"
+			android:icon="@drawable/pref_ic_update"
+			android:title="@string/update_check"/>
+		<Preference
 			android:id="@+id/action_about"
 			android:key="action_about"
 			android:icon="@drawable/pref_ic_info"

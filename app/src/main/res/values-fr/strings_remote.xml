@@ -111,4 +111,15 @@
 	<string name="plus_usb_readonly_title">Disque en lecture seule</string>
 	<string name="plus_usb_readonly_message">La TV peut lire les films de %1$s mais pas écrire dessus : il est sûrement formaté en NTFS.\n\nPour y télécharger, formate-le en exFAT (sur un PC ou dans les paramètres de la TV). Le formatage efface tout son contenu.\n\nEn attendant, les téléchargements vont dans la mémoire de la TV.</string>
 	<string name="plus_usb_reverted">Impossible d\'écrire sur le disque USB : les téléchargements retournent dans la mémoire de la TV</string>
+	<string name="update_check">Rechercher une mise à jour</string>
+	<string name="update_current">Version installée : %1$s</string>
+	<string name="update_checking">Recherche d\'une mise à jour…</string>
+	<string name="update_none">Torrent TV est à jour</string>
+	<string name="update_failed">Impossible de vérifier ou de télécharger la mise à jour. Réessaie plus tard.</string>
+	<string name="update_title">Mise à jour disponible</string>
+	<string name="update_message">La version %1$s est prête. L\'installer maintenant ?\n\nLes téléchargements reprendront tout seuls ensuite.</string>
+	<string name="update_install">Installer</string>
+	<string name="update_later">Plus tard</string>
+	<string name="update_downloading">Téléchargement de la mise à jour…</string>
+	<string name="update_permission">Pour installer ses mises à jour, Torrent TV a besoin de l\'autorisation d\'installer des applis. Dans l\'écran qui s\'ouvre, active l\'interrupteur pour Torrent TV, puis reviens.</string>
 </resources>

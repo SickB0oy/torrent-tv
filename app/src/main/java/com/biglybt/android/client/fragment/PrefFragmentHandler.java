@@ -297,6 +297,11 @@ public class PrefFragmentHandler
 				return true;
 			}
 
+			case "plus_check_update": {
+				com.biglybt.android.client.AppUpdater.checkNow(activity);
+				return true;
+			}
+
 			case KEY_ACTION_ABOUT: {
 				DialogFragmentAbout dlg = new DialogFragmentAbout();
 				AndroidUtilsUI.showDialog(dlg,
@@ -474,6 +479,12 @@ public class PrefFragmentHandler
 				KEY_SHOW_OPEN_OPTIONS);
 		if (prefShowOpenOptions != null) {
 			prefShowOpenOptions.setChecked(ds.getBoolean(KEY_SHOW_OPEN_OPTIONS));
+		}
+
+		Preference prefUpdate = findPreference("plus_check_update");
+		if (prefUpdate != null) {
+			prefUpdate.setSummary(activity.getString(R.string.update_current,
+					com.biglybt.android.client.AppUpdater.currentVersion()));
 		}
 
 		Preference prefLanguage = findPreference(KEY_LANGUAGE);

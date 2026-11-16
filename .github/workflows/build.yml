@@ -62,7 +62,7 @@ jobs:
       - name: Build release APK
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon --stacktrace assembleCoreFlavorFossFlavorRelease
+          ./gradlew --no-daemon --stacktrace -PttvBuild=${{ github.run_number }} assembleCoreFlavorFossFlavorRelease
 
       - name: Collect APK
         id: apk
