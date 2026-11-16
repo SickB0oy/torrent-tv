@@ -52,16 +52,33 @@
 				android:alpha="0.55"
 				android:textSize="12sp" />
 
-			<!-- Torrent TV: start a film already begun again from 0:00 -->
-			<com.google.android.material.button.MaterialButton
-				android:id="@+id/detail_from_start"
-				style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-				android:layout_width="wrap_content"
+			<LinearLayout
+				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:layout_marginTop="12dp"
-				android:text="@string/library_from_start"
-				android:textAllCaps="false"
-				android:visibility="gone" />
+				android:orientation="horizontal">
+
+				<!-- Torrent TV: start a film already begun again from 0:00 -->
+				<com.google.android.material.button.MaterialButton
+					android:id="@+id/detail_from_start"
+					style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_marginEnd="12dp"
+					android:text="@string/library_from_start"
+					android:textAllCaps="false"
+					android:visibility="gone" />
+
+				<!-- Torrent TV: delete the file for good -->
+				<com.google.android.material.button.MaterialButton
+					android:id="@+id/detail_delete"
+					style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/library_delete"
+					android:textAllCaps="false"
+					android:textColor="@color/service_red" />
+			</LinearLayout>
 		</LinearLayout>
 	</LinearLayout>
 </ScrollView>

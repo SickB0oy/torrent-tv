@@ -24,6 +24,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -53,6 +54,8 @@ public class LibraryActivity
 	public static final String EXTRA_DIRS = "dirs";
 
 	private MediaLibrary library;
+
+	private static final String TAG = "Library";
 
 	private final ArrayList<MediaLibrary.Item> items = new ArrayList<>();
 
@@ -449,11 +452,90 @@ public class LibraryActivity
 				PlayerActivity.play(this, it.uri(), it.title);
 			});
 		}
+		View delete = v.findViewById(R.id.detail_delete);
+		if (delete != null) {
+			delete.setOnClickListener(b -> confirmDelete(it, dlg));
+		}
 		dlg.show();
 		Button play = dlg.getButton(AlertDialog.BUTTON_POSITIVE);
 		if (play != null) {
 			play.requestFocus();
 		}
+	}
+
+	/* ---------- Delete ---------- */
+
+	private void confirmDelete(MediaLibrary.Item it, AlertDialog details) {
+		new MaterialAlertDialogBuilder(this).setTitle(
+				getString(R.string.library_delete_title, it.title)).setMessage(
+						R.string.library_delete_message).setPositiveButton(
+								R.string.library_delete, (d, w) -> {
+									details.dismiss();
+									deleteItem(it);
+								}).setNegativeButton(android.R.string.cancel, null).show();
+	}
+
+	/**
+	 * Torrent TV: deletes the video file. The torrent it came from is removed
+	 * from the downloads too (otherwise it would show an error or download
+	 * the file again). For a season pack, only this episode's file is
+	 * deleted: the other episodes stay.
+	 */
+	private void deleteItem(MediaLibrary.Item it) {
+		final File file = new File(it.path);
+		boolean removedWithData = false;
+		try {
+			com.biglybt.android.client.session.Session s = com.biglybt.android.client.session.SessionManager.findCoreSession();
+			androidx.collection.LongSparseArray<java.util.Map<?, ?>> list = s == null
+					? null : s.torrent.getListAsSparseArray();
+			for (int i = 0; list != null && i < list.size(); i++) {
+				java.util.Map<?, ?> t = list.valueAt(i);
+				String dir = com.biglybt.android.util.MapUtils.getMapString(t,
+						com.biglybt.android.client.TransmissionVars.FIELD_TORRENT_DOWNLOAD_DIR,
+						null);
+				String name = com.biglybt.android.util.MapUtils.getMapString(t,
+						com.biglybt.android.client.TransmissionVars.FIELD_TORRENT_NAME, null);
+				if (dir == null || name == null) {
+					continue;
+				}
+				String root = new File(dir, name).getAbsolutePath();
+				boolean single = root.equals(file.getAbsolutePath());
+				if (!single && !file.getAbsolutePath().startsWith(root + "/")) {
+					continue;
+				}
+				// Single file: the torrent and its data go. Pack: the torrent goes,
+				// the other episodes stay on disk
+				s.torrent.removeTorrent(new long[] {
+					list.keyAt(i)
+				}, single, null);
+				removedWithData = single;
+				break;
+			}
+		} catch (Throwable t) {
+			Log.w(TAG, "remove torrent", t);
+		}
+		final boolean coreDeletes = removedWithData;
+		new Thread(() -> {
+			if (!coreDeletes || file.exists()) {
+				//noinspection ResultOfMethodCallIgnored
+				file.delete();
+			}
+			// Folder left with nothing in it: remove it too
+			File parent = file.getParentFile();
+			String[] left = parent == null ? null : parent.list();
+			if (left != null && left.length == 0) {
+				//noinspection ResultOfMethodCallIgnored
+				parent.delete();
+			}
+			library.forget(it.path);
+		}, "LibraryDelete").start();
+		playerPrefs().edit().remove(it.uri().toString()).remove(
+				"watched:" + it.uri().toString()).apply();
+		items.remove(it);
+		buildRows();
+		updateEmpty();
+		Toast.makeText(this, getString(R.string.library_deleted, it.title),
+				Toast.LENGTH_SHORT).show();
 	}
 
 	/** Let the user type the right title when the guess was wrong */

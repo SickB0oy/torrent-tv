@@ -125,4 +125,8 @@
 	<string name="smooth_on">On: the screen adapts to each film, no judder (black screen 1-2 s at start)</string>
 	<string name="smooth_off">Off: starts instantly, slight judder possible in camera pans</string>
 	<string name="library_from_start">From the start</string>
+	<string name="library_delete">Delete</string>
+	<string name="library_delete_title">Delete “%1$s”?</string>
+	<string name="library_delete_message">The file will be erased from the device for good. The torrent it came from is removed from the downloads too.</string>
+	<string name="library_deleted">“%1$s” deleted</string>
 </resources>

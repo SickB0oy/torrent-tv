@@ -361,6 +361,17 @@ public class MediaLibrary
 		return item.hasMetadata();
 	}
 
+	/** Torrent TV: forget a video the user deleted */
+	public synchronized void forget(@NonNull String path) {
+		List<Item> all = loadCache();
+		for (int i = all.size() - 1; i >= 0; i--) {
+			if (path.equals(all.get(i).path)) {
+				all.remove(i);
+			}
+		}
+		saveCache(all);
+	}
+
 	/**
 	 * Torrent TV: poster of a torrent, for the download list. Uses what the
 	 * library already matched (or the user corrected), else asks TMDB.

@@ -122,4 +122,8 @@
 	<string name="smooth_on">An: Der Bildschirm passt sich jedem Film an, kein Ruckeln (1-2 s schwarz beim Start)</string>
 	<string name="smooth_off">Aus: sofortiger Start, leichtes Ruckeln bei Kameraschwenks möglich</string>
 	<string name="library_from_start">Von vorne</string>
+	<string name="library_delete">Löschen</string>
+	<string name="library_delete_title">„%1$s“ löschen?</string>
+	<string name="library_delete_message">Die Datei wird endgültig vom Gerät gelöscht. Der zugehörige Torrent wird auch aus den Downloads entfernt.</string>
+	<string name="library_deleted">„%1$s“ gelöscht</string>
 </resources>
