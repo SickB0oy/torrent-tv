@@ -297,6 +297,14 @@ public class PrefFragmentHandler
 				return true;
 			}
 
+			case "plus_smooth_playback": {
+				boolean on = !com.biglybt.android.client.media.PlayerEngine.isSmooth(
+						activity);
+				com.biglybt.android.client.media.PlayerEngine.setSmooth(activity, on);
+				preference.setSummary(on ? R.string.smooth_on : R.string.smooth_off);
+				return true;
+			}
+
 			case "plus_check_update": {
 				com.biglybt.android.client.AppUpdater.checkNow(activity);
 				return true;
@@ -479,6 +487,15 @@ public class PrefFragmentHandler
 				KEY_SHOW_OPEN_OPTIONS);
 		if (prefShowOpenOptions != null) {
 			prefShowOpenOptions.setChecked(ds.getBoolean(KEY_SHOW_OPEN_OPTIONS));
+		}
+
+		Preference prefSmooth = findPreference("plus_smooth_playback");
+		if (prefSmooth != null) {
+			// Only a TV switches its screen mode
+			prefSmooth.setVisible(AndroidUtils.isTV(activity));
+			prefSmooth.setSummary(
+					com.biglybt.android.client.media.PlayerEngine.isSmooth(activity)
+							? R.string.smooth_on : R.string.smooth_off);
 		}
 
 		Preference prefUpdate = findPreference("plus_check_update");

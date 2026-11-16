@@ -602,19 +602,28 @@ public class PlayerActivity
 	}
 
 	/**
-	 * Torrent TV: tells the TV the film's frame rate (24 fps…), so pans don't
-	 * judder. Only when the TV can switch without a black screen (it then
-	 * follows the "match frame rate" option of the TV's own settings): forcing
-	 * a display mode blanked the screen for seconds before the film started.
+	 * Torrent TV: on a TV, the screen follows the film's frame rate, so camera
+	 * pans don't judder (a 24 fps film on a 60 Hz screen shows frames for
+	 * uneven times). "Maximum smoothness" (default): the screen switches to a
+	 * matching mode even if it goes black for 1-2 s. Otherwise only switches
+	 * the TV can do without a black screen.
 	 */
 	private void matchFrameRate() {
 		if (frameRateDone || player == null
-				|| android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R
+				|| android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M
 				|| !com.biglybt.android.client.AndroidUtils.isTV(this)) {
 			return;
 		}
 		float fps = videoFrameRate();
 		if (fps < 10 || fps > 121) {
+			return;
+		}
+		if (com.biglybt.android.client.media.PlayerEngine.isSmooth(this)) {
+			frameRateDone = true;
+			switchDisplayMode(fps);
+			return;
+		}
+		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R) {
 			return;
 		}
 		android.view.SurfaceView sv = findSurface(videoLayout);
@@ -635,6 +644,53 @@ public class PlayerActivity
 		} catch (Throwable t) {
 			Log.w(TAG, "setFrameRate", t);
 		}
+	}
+
+	/**
+	 * Picks the display mode (same resolution) whose refresh rate is the
+	 * closest whole multiple of the film's frame rate: 23.976 Hz rather than
+	 * 24 Hz for a 23.976 fps film, the lowest such rate when several fit.
+	 */
+	private void switchDisplayMode(float fps) {
+		android.view.Display display = getWindowManager().getDefaultDisplay();
+		android.view.Display.Mode current = display.getMode();
+		if (multipleError(current.getRefreshRate(), fps) < 0.0005f) {
+			return;
+		}
+		android.view.Display.Mode best = null;
+		float bestErr = 1;
+		for (android.view.Display.Mode m : display.getSupportedModes()) {
+			if (m.getPhysicalWidth() != current.getPhysicalWidth()
+					|| m.getPhysicalHeight() != current.getPhysicalHeight()) {
+				continue;
+			}
+			float err = multipleError(m.getRefreshRate(), fps);
+			if (err > 0.003f) {
+				continue;
+			}
+			if (best == null || err < bestErr - 0.0002f
+					|| (Math.abs(err - bestErr) <= 0.0002f
+							&& m.getRefreshRate() < best.getRefreshRate())) {
+				best = m;
+				bestErr = err;
+			}
+		}
+		if (best == null || best.getModeId() == current.getModeId()) {
+			return;
+		}
+		WindowManager.LayoutParams lp = getWindow().getAttributes();
+		lp.preferredDisplayModeId = best.getModeId();
+		getWindow().setAttributes(lp);
+	}
+
+	/** How far refresh/fps is from a whole number, relative (0 = exact) */
+	private static float multipleError(float refresh, float fps) {
+		float ratio = refresh / fps;
+		long whole = Math.round(ratio);
+		if (whole < 1) {
+			return 1;
+		}
+		return Math.abs(ratio - whole) / whole;
 	}
 
 	/** The video surface inside libVLC's layout (not the subtitles one) */

@@ -80,6 +80,10 @@
 			/>
 
 		<Preference
+			android:key="plus_smooth_playback"
+			android:icon="@drawable/pref_ic_smooth"
+			android:title="@string/smooth_title"/>
+		<Preference
 			android:key="ui_language"
 			android:icon="@drawable/pref_ic_language"
 			android:title="@string/preftitle_language"/>

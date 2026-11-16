@@ -118,4 +118,7 @@
 	<string name="update_later">Später</string>
 	<string name="update_downloading">Update wird geladen…</string>
 	<string name="update_permission">Um Updates zu installieren, braucht Torrent TV die Berechtigung, Apps zu installieren. Aktivieren Sie im folgenden Bildschirm den Schalter für Torrent TV und kehren Sie dann zurück.</string>
+	<string name="smooth_title">Maximale Flüssigkeit</string>
+	<string name="smooth_on">An: Der Bildschirm passt sich jedem Film an, kein Ruckeln (1-2 s schwarz beim Start)</string>
+	<string name="smooth_off">Aus: sofortiger Start, leichtes Ruckeln bei Kameraschwenks möglich</string>
 </resources>

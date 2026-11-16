@@ -42,6 +42,24 @@ public final class PlayerEngine
 
 	private static final String KEY_COMPAT_AUDIO = "compat_audio";
 
+	private static final String KEY_SMOOTH = "smooth_mode";
+
+	/**
+	 * Torrent TV: "maximum smoothness". The screen switches to the film's own
+	 * frame rate (24 fps films shown at 24/48/120 Hz), which removes the
+	 * judder of camera pans; the screen goes black 1-2 s when a film starts.
+	 * On by default.
+	 */
+	public static boolean isSmooth(@NonNull Context context) {
+		return context.getApplicationContext().getSharedPreferences(PREFS,
+				Context.MODE_PRIVATE).getBoolean(KEY_SMOOTH, true);
+	}
+
+	public static void setSmooth(@NonNull Context context, boolean on) {
+		context.getApplicationContext().getSharedPreferences(PREFS,
+				Context.MODE_PRIVATE).edit().putBoolean(KEY_SMOOTH, on).apply();
+	}
+
 	/**
 	 * Torrent TV: "compatible sound". Some TVs stay silent with 7.1 sound
 	 * (TrueHD, DTS-HD…) sent as is: this mode mixes everything down to stereo,
@@ -100,10 +118,15 @@ public final class PlayerEngine
 		stale = false;
 		if (libVLC == null) {
 			ArrayList<String> options = new ArrayList<>();
-			// Local files: short read-ahead, the disk is fast
-			options.add("--file-caching=300");
-			// Streams from this device (partial downloads): still short
-			options.add("--network-caching=1000");
+			// Read-ahead: enough to ride over a slow moment of a USB drive with
+			// a high-bitrate 4K file, short enough to start right away
+			options.add("--file-caching=800");
+			// Streams from this device (partial downloads)
+			options.add("--network-caching=1500");
+			// If a video can't use the hardware decoder: lighter software
+			// decoding (skip the loop filter on non-reference frames only)
+			options.add("--avcodec-skiploopfilter=1");
+			options.add("--avcodec-threads=0");
 			options.add("--audio-time-stretch");
 			// Most French subtitle files that aren't UTF-8 are Windows-1252
 			options.add("--subsdec-encoding=Windows-1252");
