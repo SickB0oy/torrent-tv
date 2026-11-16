@@ -51,6 +51,17 @@
 				android:layout_marginTop="14dp"
 				android:alpha="0.55"
 				android:textSize="12sp" />
+
+			<!-- Torrent TV: start a film already begun again from 0:00 -->
+			<com.google.android.material.button.MaterialButton
+				android:id="@+id/detail_from_start"
+				style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="12dp"
+				android:text="@string/library_from_start"
+				android:textAllCaps="false"
+				android:visibility="gone" />
 		</LinearLayout>
 	</LinearLayout>
 </ScrollView>
