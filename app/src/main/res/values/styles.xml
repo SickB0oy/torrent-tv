@@ -226,16 +226,15 @@
 
 	</style>
 
+	<!-- Torrent TV: modern switch (knob on a rounded track, no "ON/OFF" text) -->
 	<style name="MySwitchStyle" parent="@style/Widget.MaterialComponents.CompoundButton.Switch">
-		<item name="android:thumb">@drawable/switch_inner_holo_light</item>
-		<item name="showText">true</item>
-		<item name="switchPadding">16dp</item>
-		<item name="switchTextAppearance">@style/MySwitchTextAppearance</item>
-		<item name="thumbTextPadding">4dp</item>
-		
-		<item name="thumbTint">@color/switch_thumbs</item>
-		<item name="trackTint">@color/transparent</item>
-		<!-- Needed for Amazon TV, otherwise selected switch's text will be black -->
+		<item name="android:thumb">@drawable/plus_switch_thumb</item>
+		<item name="track">@drawable/plus_switch_track</item>
+		<item name="showText">false</item>
+		<item name="thumbTint">@null</item>
+		<item name="trackTint">@null</item>
+		<item name="useMaterialThemeColors">false</item>
+		<item name="switchMinWidth">52dp</item>
 		<item name="android:textColor">?android:attr/textColorPrimary</item>
 	</style>
 

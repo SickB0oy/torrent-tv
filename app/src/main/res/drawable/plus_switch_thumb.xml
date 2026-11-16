@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Torrent TV: round white knob of the switches -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+	android:inset="4dp">
+	<shape android:shape="oval">
+		<size android:width="22dp" android:height="22dp" />
+		<solid android:color="#FFFFFFFF" />
+	</shape>
+</inset>
