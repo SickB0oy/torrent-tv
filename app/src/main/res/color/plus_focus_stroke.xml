@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Torrent TV: white ring on the button the TV remote is on -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:state_focused="true" android:color="#FFFFFFFF" />
+	<item android:color="#00FFFFFF" />
+</selector>

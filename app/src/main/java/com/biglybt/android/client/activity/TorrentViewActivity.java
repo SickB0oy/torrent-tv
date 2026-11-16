@@ -101,6 +101,22 @@ public class TorrentViewActivity
 	@Thunk
 	BaseProgressIndicator progressBar;
 
+	/**
+	 * Torrent TV: on a TV, the left panel (actions, speeds) is hidden: the
+	 * remote got lost in it. Its actions are buttons above the list, the
+	 * speeds are on each torrent card.
+	 */
+	private void hideTvSidePanel() {
+		if (!AndroidUtils.isTV(this)) {
+			return;
+		}
+		View side = findViewById(R.id.sidelist_layout);
+		if (side != null && side.getParent() instanceof View
+				&& ((View) side.getParent()).getId() != android.R.id.content) {
+			((View) side.getParent()).setVisibility(View.GONE);
+		}
+	}
+
 	/** Torrent TV: the library is shown once per app start on TV */
 	private static boolean libraryShownAtLaunch;
 
@@ -153,6 +169,7 @@ public class TorrentViewActivity
 			}
 		}
 		setupActionBar();
+		hideTvSidePanel();
 		openLibraryOnTvLaunch();
 
 		// setup view ids now because listeners below may trigger as soon as we
@@ -410,6 +427,11 @@ public class TorrentViewActivity
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	/** Torrent TV: buttons of the TV screen run the same actions as the menu */
+	public boolean plusHandleMenu(int itemId) {
+		return handleMenu(itemId);
 	}
 
 	private boolean handleMenu(int itemId) {

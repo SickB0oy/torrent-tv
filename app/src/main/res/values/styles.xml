@@ -549,7 +549,7 @@
 		<item name="chipBackgroundColor">?attr/plus_chip_bg</item>
 		<item name="android:textColor">?attr/plus_chip_text</item>
 		<item name="chipStrokeColor">?attr/plus_chip_stroke</item>
-		<item name="chipStrokeWidth">1dp</item>
+		<item name="chipStrokeWidth">2dp</item>
 		<item name="checkedIconVisible">false</item>
 		<item name="chipMinHeight">40dp</item>
 	</style>

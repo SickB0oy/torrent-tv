@@ -174,6 +174,38 @@ public class TorrentListFragment
 		}
 
 		updatePlusRemoteBanner();
+		setupTvActions();
+	}
+
+	/**
+	 * Torrent TV: on a TV, "Médiathèque" and "Paramètres" buttons above the
+	 * list. The side panel that held them is hidden (hard to reach with arrows).
+	 */
+	private void setupTvActions() {
+		View root = getView();
+		FragmentActivity fa = getActivity();
+		if (root == null || fa == null || !AndroidUtils.isTV(fa)) {
+			return;
+		}
+		View row = root.findViewById(R.id.plus_tv_actions);
+		if (row == null) {
+			return;
+		}
+		row.setVisibility(View.VISIBLE);
+		View lib = root.findViewById(R.id.plus_tv_library);
+		View set = root.findViewById(R.id.plus_tv_settings);
+		lib.setOnClickListener(v -> {
+			if (fa instanceof com.biglybt.android.client.activity.TorrentViewActivity) {
+				((com.biglybt.android.client.activity.TorrentViewActivity) fa).plusHandleMenu(
+						R.id.action_library);
+			}
+		});
+		set.setOnClickListener(v -> {
+			if (fa instanceof com.biglybt.android.client.activity.TorrentViewActivity) {
+				((com.biglybt.android.client.activity.TorrentViewActivity) fa).plusHandleMenu(
+						R.id.action_settings);
+			}
+		});
 	}
 
 	/**
