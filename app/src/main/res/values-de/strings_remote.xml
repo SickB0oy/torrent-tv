@@ -100,4 +100,8 @@
 	<string name="library_section_new">Neu</string>
 	<string name="library_section_movies">Filme</string>
 	<string name="library_section_series">Serien</string>
+	<string name="player_audio_compat">Kein Ton?</string>
+	<string name="player_audio_normal">Mehrkanalton</string>
+	<string name="player_audio_compat_toast">Ton vom Fernseher nicht unterstützt: Wechsel zu kompatiblem Ton (Stereo)</string>
+	<string name="player_audio_normal_toast">Zurück zum normalen Ton</string>
 </resources>

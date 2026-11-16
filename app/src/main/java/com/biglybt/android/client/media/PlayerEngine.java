@@ -40,6 +40,26 @@ public final class PlayerEngine
 
 	private static final String KEY_SUB_SIZE = "sub_size";
 
+	private static final String KEY_COMPAT_AUDIO = "compat_audio";
+
+	/**
+	 * Torrent TV: "compatible sound". Some TVs stay silent with 7.1 sound
+	 * (TrueHD, DTS-HD…) sent as is: this mode mixes everything down to stereo,
+	 * which every TV plays.
+	 */
+	public static boolean isCompatAudio(@NonNull Context context) {
+		return context.getApplicationContext().getSharedPreferences(PREFS,
+				Context.MODE_PRIVATE).getBoolean(KEY_COMPAT_AUDIO, false);
+	}
+
+	/** Saved; applies from the next video start (see {@link #get}) */
+	public static synchronized void setCompatAudio(@NonNull Context context,
+			boolean on) {
+		context.getApplicationContext().getSharedPreferences(PREFS,
+				Context.MODE_PRIVATE).edit().putBoolean(KEY_COMPAT_AUDIO, on).apply();
+		stale = true;
+	}
+
 	/** Small, normal, large, very large: libVLC "relative font size" (lower = bigger) */
 	private static final int[] SUB_REL_SIZES = {
 		20,
@@ -87,6 +107,10 @@ public final class PlayerEngine
 			options.add("--audio-time-stretch");
 			// Most French subtitle files that aren't UTF-8 are Windows-1252
 			options.add("--subsdec-encoding=Windows-1252");
+			if (isCompatAudio(context)) {
+				// Stereo output, VLC mixes the other channels in
+				options.add("--aout=opensles");
+			}
 			options.add("--freetype-rel-fontsize="
 					+ SUB_REL_SIZES[getSubtitleSize(context)]);
 			libVLC = new LibVLC(context.getApplicationContext(), options);

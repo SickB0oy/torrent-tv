@@ -104,4 +104,8 @@
 	<string name="library_section_new">Nouveautés</string>
 	<string name="library_section_movies">Films</string>
 	<string name="library_section_series">Séries</string>
+	<string name="player_audio_compat">Pas de son ?</string>
+	<string name="player_audio_normal">Son multicanal</string>
+	<string name="player_audio_compat_toast">Son non pris en charge par la TV : passage en son compatible (stéréo)</string>
+	<string name="player_audio_normal_toast">Retour au son normal</string>
 </resources>

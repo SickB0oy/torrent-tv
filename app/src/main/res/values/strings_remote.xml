@@ -103,4 +103,8 @@
 	<string name="library_section_new">New</string>
 	<string name="library_section_movies">Movies</string>
 	<string name="library_section_series">Series</string>
+	<string name="player_audio_compat">No sound?</string>
+	<string name="player_audio_normal">Surround sound</string>
+	<string name="player_audio_compat_toast">Sound not supported by this TV: switching to compatible sound (stereo)</string>
+	<string name="player_audio_normal_toast">Back to normal sound</string>
 </resources>

@@ -136,6 +136,8 @@ public class PlayerActivity
 		findViewById(R.id.player_subtitles).setOnClickListener(v -> chooseSubtitles());
 		findViewById(R.id.player_aspect).setOnClickListener(v -> cycleAspect());
 		videoLayout.setOnClickListener(v -> toggleControls());
+		// TV remote: focus stays on the buttons, never on the picture
+		videoLayout.setFocusable(false);
 
 		seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override
@@ -277,6 +279,7 @@ public class PlayerActivity
 				btnPlay.setImageResource(R.drawable.ic_player_pause);
 				btnPlay.setContentDescription(getString(R.string.player_pause));
 				maybeResume();
+				scheduleAudioCheck();
 				break;
 			case MediaPlayer.Event.Paused:
 			case MediaPlayer.Event.Stopped:
@@ -339,9 +342,9 @@ public class PlayerActivity
 	}
 
 	private void showControls() {
-		boolean wasHidden = controls.getVisibility() != View.VISIBLE;
 		controls.setVisibility(View.VISIBLE);
-		if (wasHidden) {
+		// TV remote: always a highlighted button to start from
+		if (controls.findFocus() == null) {
 			btnPlay.requestFocus();
 		}
 		handler.removeCallbacks(hideControls);
@@ -355,19 +358,27 @@ public class PlayerActivity
 			return;
 		}
 		controls.setVisibility(View.GONE);
-		videoLayout.requestFocus();
 	}
 
+	/**
+	 * TV remote. Controls hidden: OK = pause/play, left/right = -/+ 10 s,
+	 * up/down = show the buttons. Controls shown: arrows move between the
+	 * buttons, OK presses one; on the timeline, left/right = -/+ 10 s.
+	 * Back hides the buttons, then leaves.
+	 */
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent event) {
-		if (event.getAction() != KeyEvent.ACTION_DOWN) {
-			return super.dispatchKeyEvent(event);
-		}
 		int code = event.getKeyCode();
+		if (event.getAction() != KeyEvent.ACTION_DOWN) {
+			return isOurKey(code) || super.dispatchKeyEvent(event);
+		}
 		boolean visible = controls.getVisibility() == View.VISIBLE;
+		// Held down: bigger steps
+		long step = event.getRepeatCount() > 4 ? SEEK_STEP_MS * 3 : SEEK_STEP_MS;
 		switch (code) {
 			case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
 			case KeyEvent.KEYCODE_SPACE:
+			case KeyEvent.KEYCODE_HEADSETHOOK:
 				togglePlay();
 				return true;
 			case KeyEvent.KEYCODE_MEDIA_PLAY:
@@ -380,26 +391,37 @@ public class PlayerActivity
 					togglePlay();
 				}
 				return true;
+			case KeyEvent.KEYCODE_MEDIA_STOP:
+				finish();
+				return true;
 			case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+			case KeyEvent.KEYCODE_MEDIA_NEXT:
 				seekBy(SEEK_STEP_MS * 3);
 				return true;
 			case KeyEvent.KEYCODE_MEDIA_REWIND:
+			case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
 				seekBy(-SEEK_STEP_MS * 3);
 				return true;
 			case KeyEvent.KEYCODE_DPAD_LEFT:
-				if (!visible) {
-					seekBy(-SEEK_STEP_MS);
+				if (!visible || seekBar.hasFocus()) {
+					seekBy(-step);
 					return true;
 				}
 				break;
 			case KeyEvent.KEYCODE_DPAD_RIGHT:
-				if (!visible) {
-					seekBy(SEEK_STEP_MS);
+				if (!visible || seekBar.hasFocus()) {
+					seekBy(step);
 					return true;
 				}
 				break;
 			case KeyEvent.KEYCODE_DPAD_CENTER:
 			case KeyEvent.KEYCODE_ENTER:
+			case KeyEvent.KEYCODE_NUMPAD_ENTER:
+				if (!visible || seekBar.hasFocus()) {
+					togglePlay();
+					return true;
+				}
+				break;
 			case KeyEvent.KEYCODE_DPAD_UP:
 			case KeyEvent.KEYCODE_DPAD_DOWN:
 				if (!visible) {
@@ -408,7 +430,7 @@ public class PlayerActivity
 				}
 				break;
 			case KeyEvent.KEYCODE_BACK:
-				if (visible && player != null && player.isPlaying()) {
+				if (visible) {
 					hideControlsNow();
 					return true;
 				}
@@ -423,6 +445,95 @@ public class PlayerActivity
 		return super.dispatchKeyEvent(event);
 	}
 
+	/** Key-up of the keys handled entirely on key-down above */
+	private static boolean isOurKey(int code) {
+		switch (code) {
+			case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+			case KeyEvent.KEYCODE_MEDIA_PLAY:
+			case KeyEvent.KEYCODE_MEDIA_PAUSE:
+			case KeyEvent.KEYCODE_MEDIA_STOP:
+			case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+			case KeyEvent.KEYCODE_MEDIA_REWIND:
+			case KeyEvent.KEYCODE_MEDIA_NEXT:
+			case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+			case KeyEvent.KEYCODE_HEADSETHOOK:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/* ---------- Sound check ---------- */
+
+	private boolean audioChecked;
+
+	/**
+	 * Some TVs play nothing with 7.1 sound sent as is. A few seconds in, if
+	 * sound was decoded but none came out, start again at the same spot in
+	 * "compatible sound" (stereo) mode.
+	 */
+	private void scheduleAudioCheck() {
+		if (audioChecked || player == null
+				|| com.biglybt.android.client.media.PlayerEngine.isCompatAudio(this)) {
+			return;
+		}
+		audioChecked = true;
+		handler.postDelayed(() -> {
+			if (player == null || !player.isPlaying()
+					|| player.getAudioTrack() == -1) {
+				return;
+			}
+			long[] st = audioStats();
+			if (st != null && st[0] > 20 && st[1] == 0) {
+				Log.w(TAG, "Audio decoded (" + st[0] + ") but not played: compat mode");
+				switchCompatAudio(true);
+			}
+		}, 5000);
+	}
+
+	/** {decoded audio blocks, played audio buffers}, or null if unknown */
+	@Nullable
+	private long[] audioStats() {
+		Object media = null;
+		try {
+			// Looked up by reflection: the stats API moved between libVLC versions
+			media = player.getClass().getMethod("getMedia").invoke(player);
+			if (media == null) {
+				return null;
+			}
+			Object stats = media.getClass().getMethod("getStats").invoke(media);
+			if (stats == null) {
+				return null;
+			}
+			long decoded = ((Number) stats.getClass().getField("decodedAudio").get(
+					stats)).longValue();
+			long played = ((Number) stats.getClass().getField("playedAbuffers").get(
+					stats)).longValue();
+			return new long[] {
+				decoded,
+				played
+			};
+		} catch (Throwable t) {
+			return null;
+		} finally {
+			if (media != null) {
+				try {
+					media.getClass().getMethod("release").invoke(media);
+				} catch (Throwable ignore) {
+				}
+			}
+		}
+	}
+
+	private void switchCompatAudio(boolean on) {
+		com.biglybt.android.client.media.PlayerEngine.setCompatAudio(this, on);
+		Toast.makeText(this, on ? R.string.player_audio_compat_toast
+				: R.string.player_audio_normal_toast, Toast.LENGTH_LONG).show();
+		// The new sound output is picked when the player starts again
+		savePosition();
+		recreate();
+	}
+
 	/* ---------- Tracks and picture ---------- */
 
 	private void chooseAudio() {
@@ -430,8 +541,12 @@ public class PlayerActivity
 			return;
 		}
 		MediaPlayer.TrackDescription[] tracks = player.getAudioTracks();
+		final boolean compat = com.biglybt.android.client.media.PlayerEngine.isCompatAudio(
+				this);
 		showTrackDialog(R.string.player_audio, tracks, player.getAudioTrack(),
-				id -> player.setAudioTrack(id));
+				id -> player.setAudioTrack(id),
+				compat ? R.string.player_audio_normal : R.string.player_audio_compat,
+				() -> switchCompatAudio(!compat));
 	}
 
 	private void chooseSubtitles() {
@@ -487,13 +602,14 @@ public class PlayerActivity
 	}
 
 	/**
-	 * Torrent TV: on a TV, switch the screen to a refresh rate that is a whole
-	 * multiple of the video's frame rate (24 fps film on 48/120/144 Hz…), so
-	 * camera pans don't judder. Same resolution, nothing done on phones.
+	 * Torrent TV: tells the TV the film's frame rate (24 fps…), so pans don't
+	 * judder. Only when the TV can switch without a black screen (it then
+	 * follows the "match frame rate" option of the TV's own settings): forcing
+	 * a display mode blanked the screen for seconds before the film started.
 	 */
 	private void matchFrameRate() {
 		if (frameRateDone || player == null
-				|| android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M
+				|| android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R
 				|| !com.biglybt.android.client.AndroidUtils.isTV(this)) {
 			return;
 		}
@@ -501,35 +617,50 @@ public class PlayerActivity
 		if (fps < 10 || fps > 121) {
 			return;
 		}
-		frameRateDone = true;
-		android.view.Display display = getWindowManager().getDefaultDisplay();
-		android.view.Display.Mode current = display.getMode();
-		if (isMultiple(current.getRefreshRate(), fps)) {
+		android.view.SurfaceView sv = findSurface(videoLayout);
+		if (sv == null || !sv.getHolder().getSurface().isValid()) {
 			return;
 		}
-		android.view.Display.Mode best = null;
-		for (android.view.Display.Mode m : display.getSupportedModes()) {
-			if (m.getPhysicalWidth() != current.getPhysicalWidth()
-					|| m.getPhysicalHeight() != current.getPhysicalHeight()
-					|| !isMultiple(m.getRefreshRate(), fps)) {
-				continue;
+		frameRateDone = true;
+		try {
+			android.view.Surface surface = sv.getHolder().getSurface();
+			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+				surface.setFrameRate(fps,
+						android.view.Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE,
+						android.view.Surface.CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS);
+			} else {
+				surface.setFrameRate(fps,
+						android.view.Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE);
 			}
-			// Lowest suitable rate: 24 Hz rather than 120 Hz for a 24 fps film
-			if (best == null || m.getRefreshRate() < best.getRefreshRate()) {
-				best = m;
-			}
-		}
-		if (best != null) {
-			WindowManager.LayoutParams lp = getWindow().getAttributes();
-			lp.preferredDisplayModeId = best.getModeId();
-			getWindow().setAttributes(lp);
+		} catch (Throwable t) {
+			Log.w(TAG, "setFrameRate", t);
 		}
 	}
 
-	private static boolean isMultiple(float refresh, float fps) {
-		float ratio = refresh / fps;
-		long whole = Math.round(ratio);
-		return whole >= 1 && Math.abs(ratio - whole) < 0.003f * whole;
+	/** The video surface inside libVLC's layout (not the subtitles one) */
+	@Nullable
+	private static android.view.SurfaceView findSurface(@NonNull View v) {
+		int id = v.getResources().getIdentifier("surface_video", "id",
+				v.getContext().getPackageName());
+		if (id != 0) {
+			View found = v.findViewById(id);
+			if (found instanceof android.view.SurfaceView) {
+				return (android.view.SurfaceView) found;
+			}
+		}
+		if (v instanceof android.view.SurfaceView) {
+			return (android.view.SurfaceView) v;
+		}
+		if (v instanceof android.view.ViewGroup) {
+			android.view.ViewGroup g = (android.view.ViewGroup) v;
+			for (int i = 0; i < g.getChildCount(); i++) {
+				android.view.SurfaceView sv = findSurface(g.getChildAt(i));
+				if (sv != null) {
+					return sv;
+				}
+			}
+		}
+		return null;
 	}
 
 	/** Frame rate of the video track (libVLC), 0 if unknown */
@@ -557,11 +688,19 @@ public class PlayerActivity
 	private void showTrackDialog(int titleRes,
 			@Nullable MediaPlayer.TrackDescription[] tracks, int current,
 			TrackChooser chooser) {
+		showTrackDialog(titleRes, tracks, current, chooser, 0, null);
+	}
+
+	private void showTrackDialog(int titleRes,
+			@Nullable MediaPlayer.TrackDescription[] tracksIn, int current,
+			TrackChooser chooser, int extraLabel, @Nullable Runnable extra) {
 		handler.removeCallbacks(hideControls);
-		if (tracks == null || tracks.length == 0) {
+		if ((tracksIn == null || tracksIn.length == 0) && extra == null) {
 			Toast.makeText(this, R.string.player_no_tracks, Toast.LENGTH_SHORT).show();
 			return;
 		}
+		final MediaPlayer.TrackDescription[] tracks = tracksIn != null ? tracksIn
+				: new MediaPlayer.TrackDescription[0];
 		String[] names = new String[tracks.length];
 		int checked = -1;
 		for (int i = 0; i < tracks.length; i++) {
@@ -572,12 +711,16 @@ public class PlayerActivity
 				checked = i;
 			}
 		}
-		new MaterialAlertDialogBuilder(this).setTitle(titleRes).setSingleChoiceItems(
-				names, checked, (d, which) -> {
+		MaterialAlertDialogBuilder b = new MaterialAlertDialogBuilder(this).setTitle(
+				titleRes).setSingleChoiceItems(names, checked, (d, which) -> {
 					chooser.choose(tracks[which].id);
 					d.dismiss();
 					showControls();
-				}).setOnCancelListener(d -> showControls()).show();
+				}).setOnCancelListener(d -> showControls());
+		if (extra != null) {
+			b.setNeutralButton(extraLabel, (d, w) -> extra.run());
+		}
+		b.show();
 	}
 
 	private void cycleAspect() {
