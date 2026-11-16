@@ -37,14 +37,10 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -218,9 +214,10 @@ public final class AppUpdater
 			try {
 				//noinspection ResultOfMethodCallIgnored
 				dir.mkdirs();
-				HttpURLConnection c = open(r.apkUrl);
-				long total = c.getContentLengthLong();
-				try (InputStream in = c.getInputStream();
+				okhttp3.Response resp = open(r.apkUrl);
+				okhttp3.ResponseBody body = resp.body();
+				long total = body == null ? -1 : body.contentLength();
+				try (InputStream in = body.byteStream();
 						OutputStream out = new FileOutputStream(apk)) {
 					byte[] buf = new byte[64 * 1024];
 					long done = 0;
@@ -272,17 +269,10 @@ public final class AppUpdater
 
 	@Nullable
 	private static Release fetchLatest() throws Exception {
-		HttpURLConnection c = open(API);
-		c.setRequestProperty("Accept", "application/vnd.github+json");
 		String json;
-		try (InputStream in = c.getInputStream()) {
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			byte[] buf = new byte[8192];
-			int n;
-			while ((n = in.read(buf)) > 0) {
-				bos.write(buf, 0, n);
-			}
-			json = new String(bos.toByteArray(), StandardCharsets.UTF_8);
+		try (okhttp3.Response resp = open(API)) {
+			okhttp3.ResponseBody body = resp.body();
+			json = body == null ? "" : body.string();
 		}
 		JSONObject o = new JSONObject(json);
 		Matcher m = Pattern.compile("(\\d+)").matcher(o.optString("tag_name"));
@@ -305,18 +295,25 @@ public final class AppUpdater
 		return r.apkUrl == null || r.apkUrl.isEmpty() ? null : r;
 	}
 
+	private static final okhttp3.OkHttpClient http = new okhttp3.OkHttpClient.Builder().connectTimeout(
+			15, java.util.concurrent.TimeUnit.SECONDS).readTimeout(60,
+					java.util.concurrent.TimeUnit.SECONDS).followRedirects(
+							true).followSslRedirects(true).build();
+
+	/** GET, following GitHub's redirects to its download servers */
 	@NonNull
-	private static HttpURLConnection open(@NonNull String url) throws Exception {
-		HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
-		c.setConnectTimeout(15000);
-		c.setReadTimeout(30000);
-		c.setInstanceFollowRedirects(true);
-		c.setRequestProperty("User-Agent", "TorrentTV-Updater");
-		int code = c.getResponseCode();
-		if (code != 200) {
+	private static okhttp3.Response open(@NonNull String url) throws Exception {
+		okhttp3.Request req = new okhttp3.Request.Builder().url(url).header(
+				"User-Agent", "TorrentTV-Updater").header("Accept",
+						url.startsWith(API) ? "application/vnd.github+json"
+								: "application/octet-stream").build();
+		okhttp3.Response resp = http.newCall(req).execute();
+		if (!resp.isSuccessful()) {
+			int code = resp.code();
+			resp.close();
 			throw new java.io.IOException("HTTP " + code + " for " + url);
 		}
-		return c;
+		return resp;
 	}
 
 	private static SharedPreferences prefs(@NonNull Context c) {
