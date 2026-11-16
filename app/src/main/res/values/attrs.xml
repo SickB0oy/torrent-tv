@@ -9,6 +9,7 @@
 
 	<attr name="list_selector_attr" format="reference"/>
 	<attr name="plus_card_bg" format="reference"/>
+	<attr name="plus_pref_bg" format="reference"/>
 	<attr name="plus_chip_bg" format="reference"/>
 	<attr name="plus_chip_text" format="reference"/>
 	<attr name="plus_chip_stroke" format="reference"/>

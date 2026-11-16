@@ -105,9 +105,13 @@
 		<item name="switchPreferenceCompatStyle">@style/MySwitchPreferenceStyle</item>
 		<item name="switchPreferenceStyle">@style/MySwitchPreferenceStyle</item>
 		<item name="android:switchPreferenceStyle">@style/MySwitchPreferenceStyle</item>
+		<item name="preferenceStyle">@style/PlusPreference</item>
+		<item name="preferenceScreenStyle">@style/PlusPreferenceScreen</item>
+		<item name="preferenceCategoryStyle">@style/PlusPreferenceCategory</item>
 	</style>
 
 	<style name="MySwitchPreferenceStyle" parent="@style/Preference.SwitchPreference.Material">
+		<item name="android:layout">@layout/plus_pref_item</item>
 		<item name="widgetLayout">@layout/custom_switch</item>
 		<item name="singleLineTitle">false</item>
 		<item name="iconSpaceReserved">false</item>

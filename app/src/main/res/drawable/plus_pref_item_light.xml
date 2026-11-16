@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Torrent TV: setting card; the one the TV remote is on stands out -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:state_focused="true">
+		<shape><corners android:radius="14dp" /><solid android:color="#FFE3E6FF" /><stroke android:width="2dp" android:color="#FF4F5BEF" /></shape>
+	</item>
+	<item android:state_pressed="true">
+		<shape><corners android:radius="14dp" /><solid android:color="#FFE8EAFF" /></shape>
+	</item>
+	<item>
+		<shape><corners android:radius="14dp" /><solid android:color="#FFF3F4FB" /></shape>
+	</item>
+</selector>

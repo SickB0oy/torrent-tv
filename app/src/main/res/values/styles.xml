@@ -45,6 +45,9 @@
 		<item name="switchPreferenceCompatStyle">@style/MySwitchPreferenceStyle</item>
 		<item name="switchPreferenceStyle">@style/MySwitchPreferenceStyle</item>
 		<item name="android:switchPreferenceStyle">@style/MySwitchPreferenceStyle</item>
+		<item name="preferenceStyle">@style/PlusPreference</item>
+		<item name="preferenceScreenStyle">@style/PlusPreferenceScreen</item>
+		<item name="preferenceCategoryStyle">@style/PlusPreferenceCategory</item>
 	</style>
 	
 	<!-- 
@@ -86,6 +89,7 @@
 
 		<item name="list_selector_attr">@drawable/list_selector</item>
 		<item name="plus_card_bg">@drawable/plus_card_light</item>
+		<item name="plus_pref_bg">@drawable/plus_pref_item_light</item>
 		<item name="plus_chip_bg">@color/plus_chip_bg_light</item>
 		<item name="plus_chip_text">@color/plus_chip_text_light</item>
 		<item name="plus_chip_stroke">@color/plus_chip_stroke_light</item>
@@ -174,6 +178,7 @@
 		
 		<item name="list_selector_attr">@drawable/list_selector_dark</item>
 		<item name="plus_card_bg">@drawable/plus_card_dark</item>
+		<item name="plus_pref_bg">@drawable/plus_pref_item_dark</item>
 		<item name="plus_chip_bg">@color/plus_chip_bg_dark</item>
 		<item name="plus_chip_text">@color/plus_chip_text_dark</item>
 		<item name="plus_chip_stroke">@color/plus_chip_stroke_dark</item>
@@ -235,6 +240,7 @@
 	</style>
 
 	<style name="MySwitchPreferenceStyle" parent="@style/Preference.SwitchPreference.Material">
+		<item name="android:layout">@layout/plus_pref_item</item>
 		<item name="widgetLayout">@layout/custom_switch</item>
 		<item name="singleLineTitle">false</item>
 	</style>
@@ -552,5 +558,19 @@
 		<item name="chipStrokeWidth">2dp</item>
 		<item name="checkedIconVisible">false</item>
 		<item name="chipMinHeight">40dp</item>
+	</style>
+	<!-- Torrent TV: modern settings (cards, icons, accent section titles) -->
+	<style name="PlusPreference" parent="@style/Preference.Material">
+		<item name="android:layout">@layout/plus_pref_item</item>
+		<item name="singleLineTitle">false</item>
+	</style>
+
+	<style name="PlusPreferenceScreen" parent="@style/Preference.PreferenceScreen.Material">
+		<item name="android:layout">@layout/plus_pref_item</item>
+		<item name="singleLineTitle">false</item>
+	</style>
+
+	<style name="PlusPreferenceCategory" parent="@style/Preference.Category.Material">
+		<item name="android:layout">@layout/plus_pref_category</item>
 	</style>
 </resources>

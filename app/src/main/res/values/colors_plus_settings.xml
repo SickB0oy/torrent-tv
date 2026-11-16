@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!-- Torrent TV: section titles of the settings -->
+	<color name="plus_accent_text">#FF7C86F5</color>
+	<!-- Torrent TV: TV settings panel, same dark blue as the app and web page -->
+	<color name="lb_preference_decor_list_background">#FF14162E</color>
+</resources>
