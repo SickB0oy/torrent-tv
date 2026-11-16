@@ -124,4 +124,5 @@
 	<string name="smooth_title">Maximum smoothness</string>
 	<string name="smooth_on">On: the screen adapts to each film, no judder (black screen 1-2 s at start)</string>
 	<string name="smooth_off">Off: starts instantly, slight judder possible in camera pans</string>
+	<string name="library_from_start">From the start</string>
 </resources>

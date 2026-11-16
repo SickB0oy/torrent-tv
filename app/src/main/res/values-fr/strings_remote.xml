@@ -125,4 +125,5 @@
 	<string name="smooth_title">Fluidité maximale</string>
 	<string name="smooth_on">Activée : l\'écran s\'adapte à chaque film, aucune saccade (écran noir 1 à 2 s au démarrage)</string>
 	<string name="smooth_off">Désactivée : démarrage immédiat, légères saccades possibles dans les mouvements de caméra</string>
+	<string name="library_from_start">Depuis le début</string>
 </resources>

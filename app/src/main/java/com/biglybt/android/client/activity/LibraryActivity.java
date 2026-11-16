@@ -438,7 +438,13 @@ public class LibraryActivity
 				resume > 0 ? R.string.library_resume : R.string.library_play,
 				(d, w) -> PlayerActivity.play(this, it.uri(), it.title)).setNeutralButton(
 						R.string.library_fix, (d, w) -> askFix(it)).setNegativeButton(
-								R.string.library_close, null).create();
+								resume > 0 ? R.string.library_from_start
+										: R.string.library_close,
+								resume > 0 ? (d, w) -> {
+									// Forget the saved spot, then play from 0:00
+									playerPrefs().edit().remove(it.uri().toString()).commit();
+									PlayerActivity.play(this, it.uri(), it.title);
+								} : null).create();
 		dlg.show();
 		Button play = dlg.getButton(AlertDialog.BUTTON_POSITIVE);
 		if (play != null) {
