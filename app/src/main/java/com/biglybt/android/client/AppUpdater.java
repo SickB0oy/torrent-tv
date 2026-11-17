@@ -273,11 +273,10 @@ public final class AppUpdater
 	}
 
 	/**
-	 * The installer kills the app at once: downloads stopped that way are
+	 * The installer kills the app at once: downloads stopped that way would be
 	 * checked again from scratch when it restarts ("Vérification des
-	 * fichiers"). So the torrent service is shut down properly first (it saves
-	 * where each download is), then the installer opens. If the update is
-	 * cancelled, the service is started again when the app comes back.
+	 * fichiers"). So the torrent service first writes where each download is
+	 * (it keeps running, the app stays connected), then the installer opens.
 	 */
 	private static void stopCoreThenInstall(@NonNull Activity activity,
 			@NonNull Runnable install) {
@@ -291,112 +290,22 @@ public final class AppUpdater
 		text.setPadding(pad, pad / 2, pad, 0);
 		final AlertDialog dlg = new MaterialAlertDialogBuilder(activity).setTitle(
 				R.string.update_title).setView(text).setCancelable(false).show();
-		com.biglybt.android.util.BiglyCoreUtils.shutdownCoreService();
-		final Context app = activity.getApplicationContext();
-		new Thread(() -> {
-			long end = System.currentTimeMillis() + 15000;
+		try {
+			Intent save = new Intent("com.biglybt.android.client.SAVE_STATE");
+			save.setClassName(activity.getPackageName(),
+					"com.biglybt.android.client.service.BiglyBTService");
+			activity.startService(save);
+		} catch (Throwable t) {
+			Log.w(TAG, "save state", t);
+		}
+		// A few seconds for the progress to be written
+		main.postDelayed(() -> {
 			try {
-				Thread.sleep(800);
-				while (coreProcessAlive(app) && System.currentTimeMillis() < end) {
-					//noinspection BusyWait
-					Thread.sleep(300);
-				}
-			} catch (InterruptedException ignore) {
+				dlg.dismiss();
+			} catch (Throwable ignore) {
 			}
-			main.post(() -> {
-				try {
-					dlg.dismiss();
-				} catch (Throwable ignore) {
-				}
-				install.run();
-				restartCoreIfCancelled(activity);
-			});
-		}, "AppUpdater.stopCore").start();
-	}
-
-	private static boolean coreProcessAlive(@NonNull Context context) {
-		android.app.ActivityManager am = (android.app.ActivityManager) context.getSystemService(
-				Context.ACTIVITY_SERVICE);
-		java.util.List<android.app.ActivityManager.RunningAppProcessInfo> procs = am == null
-				? null : am.getRunningAppProcesses();
-		if (procs == null) {
-			return false;
-		}
-		for (android.app.ActivityManager.RunningAppProcessInfo p : procs) {
-			if (p.processName != null && p.processName.endsWith(":core_service")) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/** Back in the app without updating: the torrent service starts again */
-	private static void restartCoreIfCancelled(@NonNull Activity activity) {
-		final android.app.Application application = activity.getApplication();
-		application.registerActivityLifecycleCallbacks(
-				new android.app.Application.ActivityLifecycleCallbacks() {
-					@Override
-					public void onActivityResumed(@NonNull Activity a) {
-						application.unregisterActivityLifecycleCallbacks(this);
-						if (!ServiceSwitch.isStopped(a)) {
-							RemoteUtils.openRemoteList(a);
-						}
-					}
-
-					@Override
-					public void onActivityCreated(@NonNull Activity a,
-							@Nullable android.os.Bundle b) {
-					}
-
-					@Override
-					public void onActivityStarted(@NonNull Activity a) {
-					}
-
-					@Override
-					public void onActivityPaused(@NonNull Activity a) {
-					}
-
-					@Override
-					public void onActivityStopped(@NonNull Activity a) {
-					}
-
-					@Override
-					public void onActivitySaveInstanceState(@NonNull Activity a,
-							@NonNull android.os.Bundle b) {
-					}
-
-					@Override
-					public void onActivityDestroyed(@NonNull Activity a) {
-					}
-				});
-	}
-
-	@Nullable
-	private static Release fetchLatest() throws Exception {
-		String json;
-		try (okhttp3.Response resp = open(API)) {
-			okhttp3.ResponseBody body = resp.body();
-			json = body == null ? "" : body.string();
-		}
-		JSONObject o = new JSONObject(json);
-		Matcher m = Pattern.compile("(\\d+)").matcher(o.optString("tag_name"));
-		if (!m.find()) {
-			return null;
-		}
-		Release r = new Release();
-		r.build = Integer.parseInt(m.group(1));
-		// "Torrent TV 1.3.4.4-plus47 (build 64)" → "1.3.4.4-plus47"
-		String name = o.optString("name");
-		Matcher v = Pattern.compile("Torrent TV (\\S+)").matcher(name);
-		r.version = v.find() ? v.group(1) : o.optString("tag_name");
-		JSONArray assets = o.optJSONArray("assets");
-		for (int i = 0; assets != null && i < assets.length(); i++) {
-			JSONObject a = assets.getJSONObject(i);
-			if (APK_NAME.equals(a.optString("name"))) {
-				r.apkUrl = a.optString("browser_download_url");
-			}
-		}
-		return r.apkUrl == null || r.apkUrl.isEmpty() ? null : r;
+			install.run();
+		}, 3000);
 	}
 
 	private static final okhttp3.OkHttpClient http = new okhttp3.OkHttpClient.Builder().connectTimeout(

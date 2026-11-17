@@ -254,6 +254,51 @@ public class LibraryActivity
 	@Nullable
 	private String openShow;
 
+	/**
+	 * TV remote: ▲ on the first row of posters goes up to the tabs (the grid
+	 * otherwise keeps the focus), ▲ on the tabs goes to the header buttons.
+	 */
+	@Override
+	public boolean dispatchKeyEvent(android.view.KeyEvent event) {
+		if (event.getAction() == android.view.KeyEvent.ACTION_DOWN
+				&& event.getKeyCode() == android.view.KeyEvent.KEYCODE_DPAD_UP) {
+			View f = getCurrentFocus();
+			View child = f == null ? null : grid.findContainingItemView(f);
+			if (child != null) {
+				int pos = grid.getChildAdapterPosition(child);
+				int span = grid.getLayoutManager() instanceof GridLayoutManager
+						? ((GridLayoutManager) grid.getLayoutManager()).getSpanCount() : 1;
+				int first = firstItemRow();
+				if (pos >= first && pos - first < span) {
+					com.google.android.material.chip.ChipGroup tabs = findViewById(
+							R.id.library_tabs);
+					View chip = tabs == null ? null
+							: findViewById(tabs.getCheckedChipId());
+					if (chip != null && chip.requestFocus()) {
+						return true;
+					}
+				}
+			} else if (f != null && f.getParent() == findViewById(R.id.library_tabs)) {
+				View header = findViewById(R.id.library_downloads);
+				if (header != null && header.requestFocus()) {
+					return true;
+				}
+			}
+		}
+		if (event.getAction() == android.view.KeyEvent.ACTION_DOWN
+				&& event.getKeyCode() == android.view.KeyEvent.KEYCODE_DPAD_DOWN) {
+			View f = getCurrentFocus();
+			if (f != null && f.getParent() == findViewById(R.id.library_tabs)) {
+				RecyclerView.ViewHolder vh = grid.findViewHolderForAdapterPosition(
+						firstItemRow());
+				if (vh != null && vh.itemView.requestFocus()) {
+					return true;
+				}
+			}
+		}
+		return super.dispatchKeyEvent(event);
+	}
+
 	@Override
 	public void onBackPressed() {
 		if (openShow != null) {

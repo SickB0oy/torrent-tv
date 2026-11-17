@@ -156,6 +156,9 @@ public class BiglyBTService
 
 	private static final String INTENT_ACTION_PAUSE = "com.biglybt.android.client.PAUSE_TORRENTS";
 
+	/** Torrent TV: write every download's progress now (before an update) */
+	public static final String INTENT_ACTION_SAVE = "com.biglybt.android.client.SAVE_STATE";
+
 	private static final String INTENT_ACTION_RESUME = "com.biglybt.android.client.RESUME_TORRENTS";
 
 	private static final String WIFI_LOCK_TAG = "biglybt power lock";
@@ -418,7 +421,16 @@ public class BiglyBTService
 		if (c == null || !coreStarted) {
 			return;
 		}
-		new Thread(() -> {
+		new Thread(this::saveProgressBlocking, "SaveProgress").start();
+	}
+
+	@Thunk
+	void saveProgressBlocking() {
+		final Core c = core;
+		if (c == null || !coreStarted) {
+			return;
+		}
+		{
 			try {
 				com.biglybt.core.global.GlobalManager gm = c.getGlobalManager();
 				for (com.biglybt.core.download.DownloadManager dm : gm.getDownloadManagers()) {
@@ -431,7 +443,7 @@ public class BiglyBTService
 			} catch (Throwable t) {
 				Log.e(TAG, "saveProgressNow", t);
 			}
-		}, "SaveProgress").start();
+		}
 	}
 
 	@Thunk
@@ -1299,6 +1311,10 @@ public class BiglyBTService
 					logd("onStartCommand: Stop");
 				}
 				stopSelfAndNotify();
+				break;
+
+			case INTENT_ACTION_SAVE:
+				saveProgressBlocking();
 				break;
 
 			case INTENT_ACTION_RESUME:

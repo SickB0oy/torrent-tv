@@ -130,7 +130,7 @@
 	<string name="plus_password_now">Aktuelles Passwort: %1$s</string>
 	<string name="plus_new_password_message">Ein neues zufälliges Passwort ersetzt das aktuelle. Smartphones und Computer müssen sich damit neu anmelden.</string>
 	<string name="plus_new_password_yes">Neues erstellen</string>
-	<string name="update_stopping">Downloads werden vor dem Update angehalten…</string>
+	<string name="update_stopping">Download-Fortschritt wird vor dem Update gespeichert…</string>
 	<string name="player_next_label">Als Nächstes: %1$s</string>
 	<string name="player_next_count">Startet in %1$d s</string>
 	<string name="player_next_now">Jetzt abspielen</string>
