@@ -308,6 +308,34 @@ public final class AppUpdater
 		}, 3000);
 	}
 
+	@Nullable
+	private static Release fetchLatest() throws Exception {
+		String json;
+		try (okhttp3.Response resp = open(API)) {
+			okhttp3.ResponseBody body = resp.body();
+			json = body == null ? "" : body.string();
+		}
+		JSONObject o = new JSONObject(json);
+		Matcher m = Pattern.compile("(\\d+)").matcher(o.optString("tag_name"));
+		if (!m.find()) {
+			return null;
+		}
+		Release r = new Release();
+		r.build = Integer.parseInt(m.group(1));
+		// "Torrent TV 1.3.4.4-plus47 (build 64)" → "1.3.4.4-plus47"
+		String name = o.optString("name");
+		Matcher v = Pattern.compile("Torrent TV (\\S+)").matcher(name);
+		r.version = v.find() ? v.group(1) : o.optString("tag_name");
+		JSONArray assets = o.optJSONArray("assets");
+		for (int i = 0; assets != null && i < assets.length(); i++) {
+			JSONObject a = assets.getJSONObject(i);
+			if (APK_NAME.equals(a.optString("name"))) {
+				r.apkUrl = a.optString("browser_download_url");
+			}
+		}
+		return r.apkUrl == null || r.apkUrl.isEmpty() ? null : r;
+	}
+
 	private static final okhttp3.OkHttpClient http = new okhttp3.OkHttpClient.Builder().connectTimeout(
 			15, java.util.concurrent.TimeUnit.SECONDS).readTimeout(60,
 					java.util.concurrent.TimeUnit.SECONDS).followRedirects(
