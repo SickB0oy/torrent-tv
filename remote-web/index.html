@@ -414,6 +414,11 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     <ul class="list" id="results"></ul>
   </section>
   <section id="libPanel" hidden>
+    <div class="filters" role="group" id="libTabs" style="margin: 0 0 6px">
+      <button class="chip" data-lt="home" aria-pressed="true" data-i18n="libHome"></button>
+      <button class="chip" data-lt="movies" aria-pressed="false" data-i18n="libMovies"></button>
+      <button class="chip" data-lt="series" aria-pressed="false" data-i18n="libSeries"></button>
+    </div>
     <div class="lib-head" id="libHead" hidden>
       <button class="btn" id="libBack" type="button">‹</button>
       <h2 id="libShowTitle"></h2>
@@ -550,6 +555,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       tabLibrary: "Médiathèque",
       playOnTv: "▶ Lire sur la TV",
       libEmpty: "Aucun film pour l'instant. Les téléchargements terminés apparaissent ici une fois la médiathèque ouverte sur la TV.",
+      libHome: "Accueil", libShowSeason: "Saison {0} · {1}", libShowSeasons: "Saisons {0} à {2} · {1}",
       libContinue: "Continuer à regarder", libNew: "Nouveautés", libMovies: "Films", libSeries: "Séries",
       libSeen: "Vu", libStarted: "En cours", libEpisodes: "{0} épisodes", libSeason: "Saison {0}",
       libPlaying: "Lecture lancée sur la TV",
@@ -647,6 +653,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       tabLibrary: "Library",
       playOnTv: "▶ Play on the TV",
       libEmpty: "No films yet. Finished downloads show here once the library has been opened on the TV.",
+      libHome: "Home", libShowSeason: "Season {0} · {1}", libShowSeasons: "Seasons {0} to {2} · {1}",
       libContinue: "Continue watching", libNew: "New", libMovies: "Movies", libSeries: "Series",
       libSeen: "Watched", libStarted: "Started", libEpisodes: "{0} episodes", libSeason: "Season {0}",
       libPlaying: "Playing on the TV",
@@ -744,6 +751,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       tabLibrary: "Mediathek",
       playOnTv: "▶ Auf dem Fernseher abspielen",
       libEmpty: "Noch keine Filme. Fertige Downloads erscheinen hier, sobald die Mediathek auf dem Fernseher geöffnet wurde.",
+      libHome: "Start", libShowSeason: "Staffel {0} · {1}", libShowSeasons: "Staffeln {0} bis {2} · {1}",
       libContinue: "Weiterschauen", libNew: "Neu", libMovies: "Filme", libSeries: "Serien",
       libSeen: "Gesehen", libStarted: "Angefangen", libEpisodes: "{0} Folgen", libSeason: "Staffel {0}",
       libPlaying: "Wiedergabe auf dem Fernseher gestartet",
@@ -1491,7 +1499,17 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
   document.getElementById("tabLibrary").onclick = function () { setMode("library"); };
 
   /* ---------- Media library (films on the TV) ---------- */
-  var libItems = null, libShow = null, libPick = null;
+  var libItems = null, libShow = null, libPick = null, libTab = "home";
+  document.getElementById("libTabs").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-lt]");
+    if (!b) return;
+    libTab = b.dataset.lt;
+    libShow = null;
+    Array.prototype.forEach.call(this.querySelectorAll("[data-lt]"), function (c) {
+      c.setAttribute("aria-pressed", String(c === b));
+    });
+    renderLibrary();
+  });
   var NEW_MS = 14 * 24 * 3600 * 1000;
   function fmt(key, n) { return t(key).replace("{0}", n); }
   function epLabel(x) {
@@ -1508,6 +1526,12 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       body.innerHTML = '<div class="lib-empty">' + esc(e.message) + "</div>";
     });
   }
+  function showSub(sh) {
+    var mn = Infinity, mx = -Infinity;
+    sh.eps.forEach(function (e) { mn = Math.min(mn, e.season); mx = Math.max(mx, e.season); });
+    var eps = fmt("libEpisodes", sh.eps.length);
+    return (mn === mx ? t("libShowSeason") : t("libShowSeasons")).replace("{0}", mn).replace("{2}", mx).replace("{1}", eps);
+  }
   function card(x, isShow, count) {
     var badge = "";
     if (isShow) {
@@ -1518,7 +1542,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       badge = x.watched ? t("libSeen") : x.resume > 0 ? t("libStarted") : "";
     }
     var f = isShow ? x.eps[0] : x;
-    var sub = isShow ? fmt("libEpisodes", count) : (f.season >= 0 && f.episode >= 0 ? epLabel(f) : f.year);
+    var sub = isShow ? showSub(x) : (f.season >= 0 && f.episode >= 0 ? epLabel(f) : f.year);
     return '<button class="lib-card" type="button" data-' + (isShow ? "show" : "path") + '="' +
       esc(isShow ? x.key : x.path) + '"><div class="lib-poster">' + esc(f.title) +
       (f.poster ? '<img loading="lazy" alt="" src="' + esc(f.poster) + '">' : "") +
@@ -1578,8 +1602,12 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       var anyNew = sh.eps.some(function (e) { return !e.watched && !(e.resume > 0) && now - e.modified < NEW_MS; });
       (anyNew ? fresh : series).push(sh);
     });
-    body.innerHTML = section(t("libContinue"), cont) + section(t("libNew"), fresh) +
-      section(t("libMovies"), movies) + section(t("libSeries"), series);
+    var allMovies = items.filter(function (x) { return !(x.season >= 0 && x.episode >= 0); });
+    if (libTab === "movies") body.innerHTML = section(t("libMovies"), allMovies);
+    else if (libTab === "series") body.innerHTML = section(t("libSeries"), order);
+    else if (!cont.length && !fresh.length)
+      body.innerHTML = section(t("libMovies"), movies) + section(t("libSeries"), series);
+    else body.innerHTML = section(t("libContinue"), cont) + section(t("libNew"), fresh);
   }
   document.getElementById("libBody").addEventListener("click", function (e) {
     var c = e.target.closest(".lib-card");

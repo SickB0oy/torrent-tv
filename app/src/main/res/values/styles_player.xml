@@ -40,5 +40,8 @@
 		<item name="colorPrimary">@color/dark_primaryColor</item>
 		<item name="colorAccent">@color/dark_button_primaryColor</item>
 		<item name="colorSecondary">@color/dark_button_primaryColor</item>
+		<item name="plus_chip_bg">@color/plus_chip_bg_dark</item>
+		<item name="plus_chip_text">@color/plus_chip_text_dark</item>
+		<item name="plus_chip_stroke">@color/plus_chip_stroke_dark</item>
 	</style>
 </resources>

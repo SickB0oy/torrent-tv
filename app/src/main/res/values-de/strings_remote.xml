@@ -148,4 +148,7 @@
 	<string name="plus_space_hint">⚠️ Speicher fast voll: nur noch %1$s frei. Hier tippen, um Platz zu schaffen (bereits gesehene Filme).</string>
 	<string name="library_free_title">Platz schaffen</string>
 	<string name="library_freed">%1$s freigegeben</string>
+	<string name="library_tab_home">Start</string>
+	<string name="library_show_season">Staffel %1$d · %2$s</string>
+	<string name="library_show_seasons">Staffeln %1$d bis %2$d · %3$s</string>
 </resources>

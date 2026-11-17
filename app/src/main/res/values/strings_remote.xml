@@ -151,4 +151,7 @@
 	<string name="plus_space_hint">⚠️ Storage almost full: %1$s left. Tap here to free space (films already watched).</string>
 	<string name="library_free_title">Free some space</string>
 	<string name="library_freed">%1$s freed</string>
+	<string name="library_tab_home">Home</string>
+	<string name="library_show_season">Season %1$d · %2$s</string>
+	<string name="library_show_seasons">Seasons %1$d to %2$d · %3$s</string>
 </resources>

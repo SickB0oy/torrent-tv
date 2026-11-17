@@ -142,6 +142,18 @@ public class LibraryActivity
 		btnEmptyAction = findViewById(R.id.library_empty_action);
 		progress = findViewById(R.id.library_progress);
 		findViewById(R.id.library_back).setOnClickListener(v -> onBackPressed());
+		com.google.android.material.chip.ChipGroup tabs = findViewById(R.id.library_tabs);
+		tabs.setOnCheckedStateChangeListener((g, ids) -> {
+			int id = ids.isEmpty() ? R.id.library_tab_home : ids.get(0);
+			int t = id == R.id.library_tab_movies ? TAB_MOVIES
+					: id == R.id.library_tab_series ? TAB_SERIES : TAB_HOME;
+			if (t != tab || openShow != null) {
+				tab = t;
+				openShow = null;
+				buildRows();
+				grid.scrollToPosition(0);
+			}
+		});
 		findViewById(R.id.library_downloads).setOnClickListener(
 				v -> openDownloads());
 		findViewById(R.id.library_key).setOnClickListener(v -> askToken());
@@ -233,6 +245,11 @@ public class LibraryActivity
 		}
 	}
 
+	private static final int TAB_HOME = 0, TAB_MOVIES = 1, TAB_SERIES = 2;
+
+	/** Torrent TV: Accueil (continue, new), Films, Séries */
+	private int tab = TAB_HOME;
+
 	/** Series opened (its seasons and episodes shown), or null */
 	@Nullable
 	private String openShow;
@@ -322,7 +339,8 @@ public class LibraryActivity
 			}
 		}
 		ArrayList<Object> cont = new ArrayList<>(), fresh = new ArrayList<>(),
-				movies = new ArrayList<>(), series = new ArrayList<>();
+				movies = new ArrayList<>(), series = new ArrayList<>(),
+				allMovies = new ArrayList<>(), allSeries = new ArrayList<>(shows.values());
 		long now = System.currentTimeMillis();
 		for (MediaLibrary.Item it : items) {
 			boolean seen = watched(it);
@@ -333,6 +351,7 @@ public class LibraryActivity
 			if (it.isEpisode()) {
 				continue;
 			}
+			allMovies.add(it);
 			if (seen || resumeAt(it) > 0) {
 				if (!(resumeAt(it) > 0 && !seen)) {
 					movies.add(it);
@@ -351,10 +370,20 @@ public class LibraryActivity
 			(anyNew ? fresh : series).add(sh);
 		}
 		rows.clear();
-		addSection(R.string.library_section_continue, cont);
-		addSection(R.string.library_section_new, fresh);
-		addSection(R.string.library_section_movies, movies);
-		addSection(R.string.library_section_series, series);
+		if (tab == TAB_MOVIES) {
+			java.util.Collections.sort(allMovies, (a, b) -> Long.compare(
+					((MediaLibrary.Item) b).modified, ((MediaLibrary.Item) a).modified));
+			addSection(R.string.library_section_movies, allMovies);
+		} else if (tab == TAB_SERIES) {
+			addSection(R.string.library_section_series, allSeries);
+		} else if (cont.isEmpty() && fresh.isEmpty()) {
+			// Nothing new: the home tab shows everything rather than nothing
+			addSection(R.string.library_section_movies, movies);
+			addSection(R.string.library_section_series, series);
+		} else {
+			addSection(R.string.library_section_continue, cont);
+			addSection(R.string.library_section_new, fresh);
+		}
 		adapter.notifyDataSetChanged();
 	}
 
@@ -843,12 +872,24 @@ public class LibraryActivity
 			return rows.size();
 		}
 
-		/** A series: its poster, "12 épisodes", badges from its episodes */
+		/** "Saison 1 · 9 épisodes" or "Saisons 1 à 3 · 24 épisodes" */
+		private String showSubtitle(Show show) {
+			int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
+			for (MediaLibrary.Item e : show.episodes) {
+				min = Math.min(min, e.season);
+				max = Math.max(max, e.season);
+			}
+			String eps = getResources().getQuantityString(R.plurals.library_episodes,
+					show.episodes.size(), show.episodes.size());
+			return min == max ? getString(R.string.library_show_season, min, eps)
+					: getString(R.string.library_show_seasons, min, max, eps);
+		}
+
+		/** A series: its poster, seasons and episodes, badges from its episodes */
 		private void bindShow(Holder h, Show show) {
 			MediaLibrary.Item it = show.first();
 			h.title.setText(it.title);
-			h.subtitle.setText(getResources().getQuantityString(R.plurals.library_episodes,
-					show.episodes.size(), show.episodes.size()));
+			h.subtitle.setText(showSubtitle(show));
 			String poster = it.posterUrl();
 			if (poster != null) {
 				h.fallback.setVisibility(View.GONE);
