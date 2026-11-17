@@ -400,11 +400,38 @@ public class BiglyBTService
 			}
 			if (action.equals(Intent.ACTION_SCREEN_OFF)) {
 				screenOff = true;
+				// Torrent TV: a TV going to standby may kill the app. Save where
+				// each download is now, so it doesn't check its files again
+				// from scratch ("Vérification des fichiers") when it restarts.
+				saveProgressNow();
 			} else if (action.equals(Intent.ACTION_SCREEN_ON)) {
 				screenOff = false;
 				updateNotification();
 			}
 		}
+	}
+
+	/** Torrent TV: writes every download's progress to disk, in the background */
+	@Thunk
+	void saveProgressNow() {
+		final Core c = core;
+		if (c == null || !coreStarted) {
+			return;
+		}
+		new Thread(() -> {
+			try {
+				com.biglybt.core.global.GlobalManager gm = c.getGlobalManager();
+				for (com.biglybt.core.download.DownloadManager dm : gm.getDownloadManagers()) {
+					try {
+						dm.saveResumeData();
+					} catch (Throwable ignore) {
+					}
+				}
+				gm.saveState();
+			} catch (Throwable t) {
+				Log.e(TAG, "saveProgressNow", t);
+			}
+		}, "SaveProgress").start();
 	}
 
 	@Thunk

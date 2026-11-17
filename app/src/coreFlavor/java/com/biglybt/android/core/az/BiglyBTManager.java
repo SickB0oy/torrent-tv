@@ -371,6 +371,9 @@ public class BiglyBTManager
 		raiseIfDefault("Max.Peer.Connections.Per.Torrent", 50, 120);
 		raiseIfDefault("Max.Peer.Connections.Total", 250, 500);
 		raiseIfDefault("Max Uploads", 4, 8);
+		// Progress saved every minute instead of every 5: if the TV cuts the
+		// app off, much less to check again
+		raiseIfDefault("Save Resume Interval", 5, 1);
 		raiseIfDefault("network.max.simultaneous.connect.attempts", 24, 40);
 
 		// Torrent TV: the desktop default write cache is 4 MB, far too small for
