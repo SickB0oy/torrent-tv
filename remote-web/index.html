@@ -1525,16 +1525,10 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       (badge ? '<span class="lib-badge">' + esc(badge) + "</span>" : "") +
       '</div><div class="lib-t">' + esc(f.title) + '</div><div class="lib-s">' + esc(sub || "") + "</div></button>";
   }
-  function section(title, list, group) {
+  function section(title, list) {
     if (!list.length) return "";
-    var html = "", shows = {}, order = [];
-    list.forEach(function (x) {
-      if (group && x.season >= 0 && x.episode >= 0) {
-        if (!shows[x.show]) { shows[x.show] = { key: x.show, eps: [] }; order.push(shows[x.show]); }
-        shows[x.show].eps.push(x);
-      } else order.push(x);
-    });
-    order.forEach(function (o) { html += o.eps ? card(o, true, o.eps.length) : card(o, false); });
+    var html = "";
+    list.forEach(function (o) { html += o.eps ? card(o, true, o.eps.length) : card(o, false); });
     return '<div class="lib-sec">' + esc(title) + '</div><div class="lib-grid">' + html + "</div>";
   }
   function renderLibrary() {
@@ -1566,17 +1560,26 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       return;
     }
     head.hidden = true;
-    var now = Date.now(), cont = [], fresh = [], movies = [], series = [];
+    var now = Date.now(), cont = [], fresh = [], movies = [], series = [], shows = {}, order = [];
     var items = libItems.slice().sort(function (a, b) { return b.modified - a.modified; });
     items.forEach(function (x) {
       var ep = x.season >= 0 && x.episode >= 0;
       if (!x.watched && x.resume > 0) cont.push(x);
-      else if (!x.watched && now - x.modified < NEW_MS) fresh.push(x);
-      else if (ep) series.push(x);
+      if (ep) {
+        // Every episode of a series in one tile
+        if (!shows[x.show]) { shows[x.show] = { key: x.show, eps: [] }; order.push(shows[x.show]); }
+        shows[x.show].eps.push(x);
+      } else if (x.watched) movies.push(x);
+      else if (x.resume > 0) { /* in "Continue watching" */ }
+      else if (now - x.modified < NEW_MS) fresh.push(x);
       else movies.push(x);
     });
-    body.innerHTML = section(t("libContinue"), cont, false) + section(t("libNew"), fresh, true) +
-      section(t("libMovies"), movies, false) + section(t("libSeries"), series, true);
+    order.forEach(function (sh) {
+      var anyNew = sh.eps.some(function (e) { return !e.watched && !(e.resume > 0) && now - e.modified < NEW_MS; });
+      (anyNew ? fresh : series).push(sh);
+    });
+    body.innerHTML = section(t("libContinue"), cont) + section(t("libNew"), fresh) +
+      section(t("libMovies"), movies) + section(t("libSeries"), series);
   }
   document.getElementById("libBody").addEventListener("click", function (e) {
     var c = e.target.closest(".lib-card");

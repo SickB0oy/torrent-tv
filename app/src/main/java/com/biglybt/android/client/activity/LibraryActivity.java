@@ -303,52 +303,58 @@ public class LibraryActivity
 		adapter.notifyDataSetChanged();
 	}
 
-	/** Episodes of a list grouped into series tiles; films kept as they are */
-	private List<Object> grouped(List<MediaLibrary.Item> list) {
-		ArrayList<Object> out = new ArrayList<>();
-		java.util.LinkedHashMap<String, Show> shows = new java.util.LinkedHashMap<>();
-		for (MediaLibrary.Item it : list) {
-			if (!it.isEpisode()) {
-				out.add(it);
-				continue;
-			}
-			String k = MediaLibrary.showKey(it);
-			Show s = shows.get(k);
-			if (s == null) {
-				s = new Show(k);
-				shows.put(k, s);
-				out.add(s);
-			}
-			s.episodes.add(it);
-		}
-		return out;
-	}
-
 	private void buildRows() {
 		if (openShow != null) {
 			buildShowRows();
 			return;
 		}
-		ArrayList<MediaLibrary.Item> cont = new ArrayList<>(), fresh = new ArrayList<>(),
+		// Every episode of a series in one tile, wherever the tile goes
+		java.util.LinkedHashMap<String, Show> shows = new java.util.LinkedHashMap<>();
+		for (MediaLibrary.Item it : items) {
+			if (it.isEpisode()) {
+				String k = MediaLibrary.showKey(it);
+				Show sh = shows.get(k);
+				if (sh == null) {
+					sh = new Show(k);
+					shows.put(k, sh);
+				}
+				sh.episodes.add(it);
+			}
+		}
+		ArrayList<Object> cont = new ArrayList<>(), fresh = new ArrayList<>(),
 				movies = new ArrayList<>(), series = new ArrayList<>();
 		long now = System.currentTimeMillis();
 		for (MediaLibrary.Item it : items) {
 			boolean seen = watched(it);
 			if (!seen && resumeAt(it) > 0) {
+				// Started: the episode itself, to pick up where it stopped
 				cont.add(it);
-			} else if (!seen && now - it.modified < NEW_MS) {
+			}
+			if (it.isEpisode()) {
+				continue;
+			}
+			if (seen || resumeAt(it) > 0) {
+				if (!(resumeAt(it) > 0 && !seen)) {
+					movies.add(it);
+				}
+			} else if (now - it.modified < NEW_MS) {
 				fresh.add(it);
-			} else if (it.isEpisode() || "tv".equals(it.type)) {
-				series.add(it);
 			} else {
 				movies.add(it);
 			}
 		}
+		for (Show sh : shows.values()) {
+			boolean anyNew = false;
+			for (MediaLibrary.Item e : sh.episodes) {
+				anyNew |= !watched(e) && resumeAt(e) == 0 && now - e.modified < NEW_MS;
+			}
+			(anyNew ? fresh : series).add(sh);
+		}
 		rows.clear();
-		addSection(R.string.library_section_continue, new ArrayList<>(cont));
-		addSection(R.string.library_section_new, grouped(fresh));
-		addSection(R.string.library_section_movies, new ArrayList<>(movies));
-		addSection(R.string.library_section_series, grouped(series));
+		addSection(R.string.library_section_continue, cont);
+		addSection(R.string.library_section_new, fresh);
+		addSection(R.string.library_section_movies, movies);
+		addSection(R.string.library_section_series, series);
 		adapter.notifyDataSetChanged();
 	}
 
