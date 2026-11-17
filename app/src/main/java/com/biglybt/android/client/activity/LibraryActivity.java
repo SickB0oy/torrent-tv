@@ -667,6 +667,32 @@ public class LibraryActivity
 		}
 	}
 
+	/** Torrent TV: a whole series, every episode on the device */
+	private void confirmDeleteShow(Show show) {
+		final ArrayList<MediaLibrary.Item> eps = new ArrayList<>(show.episodes);
+		long size = 0;
+		for (MediaLibrary.Item e : eps) {
+			size += e.size;
+		}
+		String title = eps.get(0).title;
+		new MaterialAlertDialogBuilder(this).setTitle(
+				getString(R.string.library_delete_title, title)).setMessage(
+						getString(R.string.library_delete_show_message,
+								getResources().getQuantityString(R.plurals.library_episodes,
+										eps.size(), eps.size()),
+								android.text.format.Formatter.formatShortFileSize(this,
+										size))).setPositiveButton(R.string.library_delete,
+												(d, w) -> {
+													for (MediaLibrary.Item e : eps) {
+														deleteItem(e, false);
+													}
+													Toast.makeText(this,
+															getString(R.string.library_deleted, title),
+															Toast.LENGTH_SHORT).show();
+												}).setNegativeButton(android.R.string.cancel,
+														null).show();
+	}
+
 	/* ---------- Free space ---------- */
 
 	/**
@@ -718,12 +744,14 @@ public class LibraryActivity
 
 	/* ---------- Delete ---------- */
 
-	private void confirmDelete(MediaLibrary.Item it, AlertDialog details) {
+	private void confirmDelete(MediaLibrary.Item it, @Nullable AlertDialog details) {
 		new MaterialAlertDialogBuilder(this).setTitle(
 				getString(R.string.library_delete_title, it.title)).setMessage(
 						R.string.library_delete_message).setPositiveButton(
 								R.string.library_delete, (d, w) -> {
-									details.dismiss();
+									if (details != null) {
+										details.dismiss();
+									}
 									deleteItem(it, true);
 								}).setNegativeButton(android.R.string.cancel, null).show();
 	}
@@ -906,6 +934,11 @@ public class LibraryActivity
 			h.seen.setVisibility(seen ? View.VISIBLE : View.GONE);
 			h.resume.setVisibility(!seen && resume > 0 ? View.VISIBLE : View.GONE);
 			h.itemView.setOnClickListener(v -> showDetails(it));
+			// Long press (OK held on the remote): delete
+			h.itemView.setOnLongClickListener(v -> {
+				confirmDelete(it, null);
+				return true;
+			});
 			h.itemView.setOnFocusChangeListener((v, focused) -> {
 				float s = focused ? 1.06f : 1f;
 				v.animate().scaleX(s).scaleY(s).setDuration(120).start();
@@ -954,6 +987,10 @@ public class LibraryActivity
 			h.seen.setVisibility(allSeen ? View.VISIBLE : View.GONE);
 			h.resume.setVisibility(!allSeen && started ? View.VISIBLE : View.GONE);
 			h.itemView.setOnClickListener(v -> openShow(show));
+			h.itemView.setOnLongClickListener(v -> {
+				confirmDeleteShow(show);
+				return true;
+			});
 			h.itemView.setOnFocusChangeListener((v, focused) -> {
 				float s = focused ? 1.06f : 1f;
 				v.animate().scaleX(s).scaleY(s).setDuration(120).start();

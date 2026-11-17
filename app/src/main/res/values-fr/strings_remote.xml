@@ -155,4 +155,5 @@
 	<string name="library_tab_home">Accueil</string>
 	<string name="library_show_season">Saison %1$d · %2$s</string>
 	<string name="library_show_seasons">Saisons %1$d à %2$d · %3$s</string>
+	<string name="library_delete_show_message">Toute la série sera effacée définitivement de l\'appareil : %1$s, %2$s. Les torrents d\'origine seront aussi retirés des téléchargements.</string>
 </resources>
