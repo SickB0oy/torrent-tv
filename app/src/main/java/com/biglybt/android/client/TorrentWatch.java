@@ -161,12 +161,16 @@ public final class TorrentWatch
 			}, true);
 		}
 		String url = streamUrl(session, torrent, file);
-		if (url == null) {
+		Uri target = url != null ? Uri.parse(url)
+				// No streaming address: the file itself, being filled in order from
+				// the start (fine as long as playback stays behind the download)
+				: local != null && local.isFile() ? Uri.fromFile(local) : null;
+		if (target == null) {
 			Toast.makeText(activity, R.string.watch_not_ready, Toast.LENGTH_LONG).show();
 			return;
 		}
 		Toast.makeText(activity, R.string.watch_streaming, Toast.LENGTH_LONG).show();
-		PlayerActivity.play(activity, Uri.parse(url), title);
+		PlayerActivity.play(activity, target, title);
 	}
 
 	@Nullable
