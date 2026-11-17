@@ -134,4 +134,12 @@
 	<string name="plus_new_password_message">A new random password replaces the current one. Phones and computers will have to sign in again with it.</string>
 	<string name="plus_new_password_yes">Make a new one</string>
 	<string name="update_stopping">Pausing downloads before the update…</string>
+	<string name="player_next_label">Next: %1$s</string>
+	<string name="player_next_count">Starts in %1$d s</string>
+	<string name="player_next_now">Play now</string>
+	<string name="library_season">Season %1$d</string>
+	<plurals name="library_episodes">
+		<item quantity="one">%d episode</item>
+		<item quantity="other">%d episodes</item>
+	</plurals>
 </resources>

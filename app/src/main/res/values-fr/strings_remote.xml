@@ -135,4 +135,12 @@
 	<string name="plus_new_password_message">Un nouveau mot de passe aléatoire remplace l\'actuel. Les téléphones et ordinateurs devront se reconnecter avec.</string>
 	<string name="plus_new_password_yes">En créer un nouveau</string>
 	<string name="update_stopping">Mise en pause des téléchargements avant la mise à jour…</string>
+	<string name="player_next_label">À suivre : %1$s</string>
+	<string name="player_next_count">Lecture dans %1$d s</string>
+	<string name="player_next_now">Lire maintenant</string>
+	<string name="library_season">Saison %1$d</string>
+	<plurals name="library_episodes">
+		<item quantity="one">%d épisode</item>
+		<item quantity="other">%d épisodes</item>
+	</plurals>
 </resources>

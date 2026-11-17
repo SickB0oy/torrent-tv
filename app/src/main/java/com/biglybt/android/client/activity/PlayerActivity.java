@@ -136,6 +136,7 @@ public class PlayerActivity
 		findViewById(R.id.player_subtitles).setOnClickListener(v -> chooseSubtitles());
 		findViewById(R.id.player_aspect).setOnClickListener(v -> cycleAspect());
 		videoLayout.setOnClickListener(v -> toggleControls());
+		setupNextEpisode();
 		// TV remote: focus stays on the buttons, never on the picture
 		videoLayout.setFocusable(false);
 
@@ -270,6 +271,7 @@ public class PlayerActivity
 					seekBar.setProgress((int) event.getTimeChanged());
 					tvTime.setText(formatTime(event.getTimeChanged()));
 				}
+				maybeOfferNext(event.getTimeChanged());
 				break;
 			case MediaPlayer.Event.Vout:
 				matchFrameRate();
@@ -280,6 +282,8 @@ public class PlayerActivity
 				btnPlay.setContentDescription(getString(R.string.player_pause));
 				maybeResume();
 				scheduleAudioCheck();
+				// Tracks are known by now: VF and French subtitles by themselves
+				handler.postDelayed(this::autoPickTracks, 400);
 				break;
 			case MediaPlayer.Event.Paused:
 			case MediaPlayer.Event.Stopped:
@@ -289,7 +293,11 @@ public class PlayerActivity
 			case MediaPlayer.Event.EndReached:
 				clearPosition();
 				markWatched();
-				finish();
+				if (nextItem != null && !nextCancelled) {
+					playNext();
+				} else {
+					finish();
+				}
 				break;
 			case MediaPlayer.Event.EncounteredError:
 				failed();
@@ -297,6 +305,178 @@ public class PlayerActivity
 			default:
 				break;
 		}
+	}
+
+	/* ---------- Languages ---------- */
+
+	private boolean tracksPicked;
+
+	/**
+	 * Torrent TV: MULTi files start in French (VFF before VFQ). French
+	 * subtitles: the full ones for a film in original version, only the
+	 * "forced" ones (signs, foreign dialogue) for a film in French.
+	 * Once per start; the Audio and Subtitles buttons still change it.
+	 */
+	private void autoPickTracks() {
+		if (tracksPicked || player == null) {
+			return;
+		}
+		tracksPicked = true;
+		try {
+			MediaPlayer.TrackDescription[] audio = player.getAudioTracks();
+			int bestAudio = -1, bestScore = 0;
+			for (int i = 0; audio != null && i < audio.length; i++) {
+				int sc = frenchScore(audio[i].name);
+				if (audio[i].id != -1 && sc > bestScore) {
+					bestScore = sc;
+					bestAudio = audio[i].id;
+				}
+			}
+			boolean frenchAudio = bestScore > 0;
+			if (frenchAudio && player.getAudioTrack() != bestAudio) {
+				player.setAudioTrack(bestAudio);
+			}
+			MediaPlayer.TrackDescription[] subs = player.getSpuTracks();
+			int full = -1, forced = -1;
+			for (int i = 0; subs != null && i < subs.length; i++) {
+				if (subs[i].id == -1 || frenchScore(subs[i].name) == 0) {
+					continue;
+				}
+				if (isForced(subs[i].name)) {
+					if (forced == -1) {
+						forced = subs[i].id;
+					}
+				} else if (full == -1) {
+					full = subs[i].id;
+				}
+			}
+			int wantSub = frenchAudio ? forced : (full != -1 ? full : forced);
+			boolean anyAudio = audio != null && audio.length > 1;
+			if (wantSub != -1) {
+				player.setSpuTrack(wantSub);
+			} else if (frenchAudio && anyAudio) {
+				// French sound, no forced French subtitles: no subtitles at all
+				player.setSpuTrack(-1);
+			}
+		} catch (Throwable t) {
+			Log.w(TAG, "autoPickTracks", t);
+		}
+	}
+
+	/** 0 = not French; higher = better French track */
+	private static int frenchScore(@Nullable String name) {
+		if (name == null) {
+			return 0;
+		}
+		String n = " " + name.toLowerCase(Locale.ROOT) + " ";
+		boolean fr = n.contains("fran") || n.contains("french") || n.contains("[fr")
+				|| n.contains("(fr") || n.contains(" fr ") || n.contains(" fre")
+				|| n.contains("vff") || n.contains("vfq") || n.contains("vfi")
+				|| n.contains(" vf ") || n.contains(" vf]") || n.contains("[vf");
+		if (!fr) {
+			return 0;
+		}
+		if (n.contains("vfq") || n.contains("qu\u00e9b") || n.contains("quebec")
+				|| n.contains("canad")) {
+			return 1;
+		}
+		if (n.contains("audiodesc") || n.contains("audio desc") || n.contains(" ad ")
+				|| n.contains("malvoyant")) {
+			return 1;
+		}
+		if (n.contains("vff") || n.contains("france") || n.contains("truefrench")) {
+			return 3;
+		}
+		return 2;
+	}
+
+	private static boolean isForced(@Nullable String name) {
+		if (name == null) {
+			return false;
+		}
+		String n = name.toLowerCase(Locale.ROOT);
+		return n.contains("forc") || n.contains("signs");
+	}
+
+	/* ---------- Next episode ---------- */
+
+	@Nullable
+	private com.biglybt.android.client.media.MediaLibrary.Item nextItem;
+
+	private boolean nextCancelled;
+
+	private boolean nextShown;
+
+	private int nextCount;
+
+	private final Runnable nextTick = this::nextTick;
+
+	/** Looks up the next episode (if this is one) in the background */
+	private void setupNextEpisode() {
+		findViewById(R.id.player_next_play).setOnClickListener(v -> playNext());
+		findViewById(R.id.player_next_cancel).setOnClickListener(v -> {
+			nextCancelled = true;
+			handler.removeCallbacks(nextTick);
+			findViewById(R.id.player_next).setVisibility(View.GONE);
+			showControls();
+		});
+		if (!"file".equals(uri.getScheme()) || uri.getPath() == null) {
+			return;
+		}
+		final String path = uri.getPath();
+		new Thread(() -> {
+			com.biglybt.android.client.media.MediaLibrary.Item n = new com.biglybt.android.client.media.MediaLibrary(
+					this).nextEpisode(path);
+			handler.post(() -> nextItem = n);
+		}, "NextEpisode").start();
+	}
+
+	/** 20 s before the end (credits): offer the next episode */
+	private void maybeOfferNext(long time) {
+		if (nextItem == null || nextCancelled || nextShown || player == null) {
+			return;
+		}
+		long length = player.getLength();
+		if (length <= 0 || length - time > 20_000) {
+			return;
+		}
+		nextShown = true;
+		com.biglybt.android.client.media.MediaLibrary.Item n = nextItem;
+		((TextView) findViewById(R.id.player_next_label)).setText(getString(
+				R.string.player_next_label, n.episodeLabel()
+						+ (n.episodeTitle != null ? " · " + n.episodeTitle : "")));
+		hideControlsNow();
+		findViewById(R.id.player_next).setVisibility(View.VISIBLE);
+		findViewById(R.id.player_next_play).requestFocus();
+		nextCount = 10;
+		nextTick();
+	}
+
+	private void nextTick() {
+		if (nextCancelled) {
+			return;
+		}
+		if (nextCount <= 0) {
+			playNext();
+			return;
+		}
+		((TextView) findViewById(R.id.player_next_count)).setText(
+				getString(R.string.player_next_count, nextCount));
+		nextCount--;
+		handler.postDelayed(nextTick, 1000);
+	}
+
+	private void playNext() {
+		com.biglybt.android.client.media.MediaLibrary.Item n = nextItem;
+		if (n == null || isFinishing()) {
+			return;
+		}
+		handler.removeCallbacks(nextTick);
+		clearPosition();
+		markWatched();
+		String title = (n.title != null ? n.title : "") + " — " + n.episodeLabel();
+		play(this, n.uri(), title);
+		finish();
 	}
 
 	private void failed() {
@@ -371,6 +551,14 @@ public class PlayerActivity
 		int code = event.getKeyCode();
 		if (event.getAction() != KeyEvent.ACTION_DOWN) {
 			return isOurKey(code) || super.dispatchKeyEvent(event);
+		}
+		View nextBox = findViewById(R.id.player_next);
+		if (nextBox != null && nextBox.getVisibility() == View.VISIBLE) {
+			if (code == KeyEvent.KEYCODE_BACK) {
+				findViewById(R.id.player_next_cancel).performClick();
+				return true;
+			}
+			return super.dispatchKeyEvent(event);
 		}
 		boolean visible = controls.getVisibility() == View.VISIBLE;
 		// Held down: bigger steps

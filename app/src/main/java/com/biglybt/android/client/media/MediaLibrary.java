@@ -361,6 +361,64 @@ public class MediaLibrary
 		return item.hasMetadata();
 	}
 
+	/** Torrent TV: same show for every episode (TMDB id, else the name) */
+	@NonNull
+	public static String showKey(@NonNull Item it) {
+		if (it.tmdbId > 0 && "tv".equals(it.type)) {
+			return "tmdb:" + it.tmdbId;
+		}
+		String g = it.guessedTitle == null || it.guessedTitle.isEmpty() ? it.title
+				: it.guessedTitle;
+		return "name:" + (g == null ? "" : g.trim().toLowerCase(Locale.ROOT));
+	}
+
+	@Nullable
+	public Item findByPath(@NonNull String path) {
+		for (Item it : loadCache()) {
+			if (path.equals(it.path)) {
+				return it;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Torrent TV: the episode after this one (same show, next episode number,
+	 * or first episode of a later season), if it is on the device.
+	 */
+	@Nullable
+	public Item nextEpisode(@NonNull String path) {
+		List<Item> all = loadCache();
+		Item cur = null;
+		for (Item it : all) {
+			if (path.equals(it.path)) {
+				cur = it;
+				break;
+			}
+		}
+		if (cur == null || !cur.isEpisode()) {
+			return null;
+		}
+		String show = showKey(cur);
+		Item best = null;
+		for (Item it : all) {
+			if (!it.isEpisode() || !show.equals(showKey(it))
+					|| !new File(it.path).exists()) {
+				continue;
+			}
+			boolean after = it.season > cur.season
+					|| (it.season == cur.season && it.episode > cur.episode);
+			if (!after) {
+				continue;
+			}
+			if (best == null || it.season < best.season
+					|| (it.season == best.season && it.episode < best.episode)) {
+				best = it;
+			}
+		}
+		return best;
+	}
+
 	/** Torrent TV: forget a video the user deleted */
 	public synchronized void forget(@NonNull String path) {
 		List<Item> all = loadCache();

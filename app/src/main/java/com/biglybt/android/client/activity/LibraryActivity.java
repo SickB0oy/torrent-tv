@@ -132,7 +132,7 @@ public class LibraryActivity
 		tvEmpty = findViewById(R.id.library_empty_text);
 		btnEmptyAction = findViewById(R.id.library_empty_action);
 		progress = findViewById(R.id.library_progress);
-		findViewById(R.id.library_back).setOnClickListener(v -> finish());
+		findViewById(R.id.library_back).setOnClickListener(v -> onBackPressed());
 		findViewById(R.id.library_downloads).setOnClickListener(
 				v -> openDownloads());
 		findViewById(R.id.library_key).setOnClickListener(v -> askToken());
@@ -204,7 +204,118 @@ public class LibraryActivity
 	 * Sorts the videos into sections, each video in only one:
 	 * "Continuer à regarder", "Nouveautés", "Films", "Séries".
 	 */
+	/** Torrent TV: one tile per series, its episodes inside */
+	static final class Show
+	{
+		final String key;
+
+		final ArrayList<MediaLibrary.Item> episodes = new ArrayList<>();
+
+		Show(String key) {
+			this.key = key;
+		}
+
+		MediaLibrary.Item first() {
+			return episodes.get(0);
+		}
+	}
+
+	/** Series opened (its seasons and episodes shown), or null */
+	@Nullable
+	private String openShow;
+
+	@Override
+	public void onBackPressed() {
+		if (openShow != null) {
+			String was = openShow;
+			openShow = null;
+			buildRows();
+			// Back on the series' tile
+			for (int i = 0; i < rows.size(); i++) {
+				if (rows.get(i) instanceof Show && ((Show) rows.get(i)).key.equals(was)) {
+					final int pos = i;
+					grid.scrollToPosition(pos);
+					grid.post(() -> {
+						RecyclerView.ViewHolder vh = grid.findViewHolderForAdapterPosition(pos);
+						if (vh != null) {
+							vh.itemView.requestFocus();
+						}
+					});
+					break;
+				}
+			}
+			return;
+		}
+		super.onBackPressed();
+	}
+
+	private void openShow(Show show) {
+		openShow = show.key;
+		buildRows();
+		grid.scrollToPosition(0);
+		grid.post(() -> {
+			RecyclerView.ViewHolder vh = grid.findViewHolderForAdapterPosition(
+					firstItemRow());
+			if (vh != null) {
+				vh.itemView.requestFocus();
+			}
+		});
+	}
+
+	/** Episodes of one series, by season */
+	private void buildShowRows() {
+		ArrayList<MediaLibrary.Item> eps = new ArrayList<>();
+		for (MediaLibrary.Item it : items) {
+			if (it.isEpisode() && openShow.equals(MediaLibrary.showKey(it))) {
+				eps.add(it);
+			}
+		}
+		if (eps.isEmpty()) {
+			openShow = null;
+			buildRows();
+			return;
+		}
+		java.util.Collections.sort(eps, (a, b) -> a.season != b.season
+				? Integer.compare(a.season, b.season) : Integer.compare(a.episode, b.episode));
+		rows.clear();
+		rows.add(eps.get(0).title == null ? "" : eps.get(0).title);
+		int season = Integer.MIN_VALUE;
+		for (MediaLibrary.Item it : eps) {
+			if (it.season != season) {
+				season = it.season;
+				rows.add(getString(R.string.library_season, season));
+			}
+			rows.add(it);
+		}
+		adapter.notifyDataSetChanged();
+	}
+
+	/** Episodes of a list grouped into series tiles; films kept as they are */
+	private List<Object> grouped(List<MediaLibrary.Item> list) {
+		ArrayList<Object> out = new ArrayList<>();
+		java.util.LinkedHashMap<String, Show> shows = new java.util.LinkedHashMap<>();
+		for (MediaLibrary.Item it : list) {
+			if (!it.isEpisode()) {
+				out.add(it);
+				continue;
+			}
+			String k = MediaLibrary.showKey(it);
+			Show s = shows.get(k);
+			if (s == null) {
+				s = new Show(k);
+				shows.put(k, s);
+				out.add(s);
+			}
+			s.episodes.add(it);
+		}
+		return out;
+	}
+
 	private void buildRows() {
+		if (openShow != null) {
+			buildShowRows();
+			return;
+		}
 		ArrayList<MediaLibrary.Item> cont = new ArrayList<>(), fresh = new ArrayList<>(),
 				movies = new ArrayList<>(), series = new ArrayList<>();
 		long now = System.currentTimeMillis();
@@ -221,14 +332,14 @@ public class LibraryActivity
 			}
 		}
 		rows.clear();
-		addSection(R.string.library_section_continue, cont);
-		addSection(R.string.library_section_new, fresh);
-		addSection(R.string.library_section_movies, movies);
-		addSection(R.string.library_section_series, series);
+		addSection(R.string.library_section_continue, new ArrayList<>(cont));
+		addSection(R.string.library_section_new, grouped(fresh));
+		addSection(R.string.library_section_movies, new ArrayList<>(movies));
+		addSection(R.string.library_section_series, grouped(series));
 		adapter.notifyDataSetChanged();
 	}
 
-	private void addSection(int title, List<MediaLibrary.Item> list) {
+	private void addSection(int title, List<?> list) {
 		if (list.isEmpty()) {
 			return;
 		}
@@ -238,7 +349,7 @@ public class LibraryActivity
 
 	private int firstItemRow() {
 		for (int i = 0; i < rows.size(); i++) {
-			if (rows.get(i) instanceof MediaLibrary.Item) {
+			if (!(rows.get(i) instanceof String)) {
 				return i;
 			}
 		}
@@ -626,6 +737,10 @@ public class LibraryActivity
 				return;
 			}
 			Holder h = (Holder) vh;
+			if (row instanceof Show) {
+				bindShow(h, (Show) row);
+				return;
+			}
 			MediaLibrary.Item it = (MediaLibrary.Item) row;
 			h.title.setText(it.title);
 			h.subtitle.setText(it.isEpisode() ? it.episodeLabel()
@@ -655,6 +770,37 @@ public class LibraryActivity
 		@Override
 		public int getItemCount() {
 			return rows.size();
+		}
+
+		/** A series: its poster, "12 épisodes", badges from its episodes */
+		private void bindShow(Holder h, Show show) {
+			MediaLibrary.Item it = show.first();
+			h.title.setText(it.title);
+			h.subtitle.setText(getResources().getQuantityString(R.plurals.library_episodes,
+					show.episodes.size(), show.episodes.size()));
+			String poster = it.posterUrl();
+			if (poster != null) {
+				h.fallback.setVisibility(View.GONE);
+				Picasso.with(h.poster.getContext()).load(poster).fit().centerCrop().into(
+						h.poster);
+			} else {
+				Picasso.with(h.poster.getContext()).cancelRequest(h.poster);
+				h.poster.setImageDrawable(null);
+				h.fallback.setVisibility(View.VISIBLE);
+				h.fallback.setText(it.title);
+			}
+			boolean allSeen = true, started = false;
+			for (MediaLibrary.Item e : show.episodes) {
+				allSeen &= watched(e);
+				started |= resumeAt(e) > 0;
+			}
+			h.seen.setVisibility(allSeen ? View.VISIBLE : View.GONE);
+			h.resume.setVisibility(!allSeen && started ? View.VISIBLE : View.GONE);
+			h.itemView.setOnClickListener(v -> openShow(show));
+			h.itemView.setOnFocusChangeListener((v, focused) -> {
+				float s = focused ? 1.06f : 1f;
+				v.animate().scaleX(s).scaleY(s).setDuration(120).start();
+			});
 		}
 	}
 
