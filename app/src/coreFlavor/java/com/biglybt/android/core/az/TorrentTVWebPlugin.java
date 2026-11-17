@@ -141,6 +141,12 @@ public class TorrentTVWebPlugin
 				case "/ttv/add":
 					out = add(in.optString("ref", ""));
 					break;
+				case "/ttv/library/get":
+					out = libraryForBrowser();
+					break;
+				case "/ttv/library/play":
+					out = playOnTv(in.optString("path", ""));
+					break;
 				default:
 					response.setReplyStatus(404);
 					return true;
@@ -156,6 +162,66 @@ public class TorrentTVWebPlugin
 		response.setHeader("Cache-Control", "no-store");
 		response.getOutputStream().write(out.toString().getBytes(StandardCharsets.UTF_8));
 		return true;
+	}
+
+	/* ---------- Media library (films and series on this device) ---------- */
+
+	private JSONObject libraryForBrowser() throws JSONException {
+		android.content.Context ctx = com.biglybt.android.client.BiglyBTApp.getContext();
+		com.biglybt.android.client.media.MediaLibrary lib = new com.biglybt.android.client.media.MediaLibrary(
+				ctx);
+		@SuppressWarnings("deprecation")
+		android.content.SharedPreferences pos = ctx.getSharedPreferences(
+				"player_positions", android.content.Context.MODE_MULTI_PROCESS);
+		JSONArray a = new JSONArray();
+		for (com.biglybt.android.client.media.MediaLibrary.Item it : lib.loadCache()) {
+			if (it.path == null || !new java.io.File(it.path).isFile()) {
+				continue;
+			}
+			String key = it.uri().toString();
+			JSONObject o = new JSONObject();
+			o.put("path", it.path);
+			o.put("title", it.title == null ? "" : it.title);
+			o.put("year", it.year == null ? "" : it.year);
+			o.put("overview", it.overview == null ? "" : it.overview);
+			o.put("season", it.season);
+			o.put("episode", it.episode);
+			o.put("episodeTitle", it.episodeTitle == null ? "" : it.episodeTitle);
+			o.put("show", com.biglybt.android.client.media.MediaLibrary.showKey(it));
+			o.put("poster", it.posterUrl() == null ? "" : it.posterUrl());
+			o.put("size", it.size);
+			o.put("modified", it.modified);
+			o.put("watched", pos.getBoolean("watched:" + key, false));
+			o.put("resume", pos.getLong(key, 0));
+			a.put(o);
+		}
+		return new JSONObject().put("items", a);
+	}
+
+	/**
+	 * Starts a film on the TV. Android lets the app open the player while
+	 * Torrent TV is on screen; otherwise the browser says to open it first.
+	 */
+	private JSONObject playOnTv(String path) throws JSONException {
+		android.content.Context ctx = com.biglybt.android.client.BiglyBTApp.getContext();
+		com.biglybt.android.client.media.MediaLibrary lib = new com.biglybt.android.client.media.MediaLibrary(
+				ctx);
+		com.biglybt.android.client.media.MediaLibrary.Item it = path.isEmpty() ? null
+				: lib.findByPath(path);
+		if (it == null || !new java.io.File(path).isFile()) {
+			return new JSONObject().put("error", "NOT_FOUND");
+		}
+		String title = it.title == null ? new java.io.File(path).getName()
+				: it.isEpisode() ? it.title + " — " + it.episodeLabel() : it.title;
+		android.content.Intent i = new android.content.Intent(ctx,
+				com.biglybt.android.client.activity.PlayerActivity.class);
+		i.setData(it.uri());
+		i.putExtra(com.biglybt.android.client.activity.PlayerActivity.EXTRA_TITLE,
+				title);
+		i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+				| android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		ctx.startActivity(i);
+		return new JSONObject().put("ok", true);
 	}
 
 	/* ---------- Trackers ---------- */

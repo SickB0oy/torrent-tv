@@ -158,6 +158,24 @@ public class TorrentListRowFiller
 				holder.bar.setProgress((int) (pctDone * 10000));
 			}
 		}
+		// Torrent TV: "Regarder", once there is something to watch
+		if (holder.btnWatch != null) {
+			boolean single = TorrentWatch.isVideoName(torrentName);
+			boolean folder = torrentName != null && !torrentName.contains(".")
+					|| !single && torrentName != null
+							&& !torrentName.matches("(?i).*\\.(zip|rar|7z|iso|exe|apk|pdf|epub|mp3|flac)$");
+			boolean ready = pctDone >= 1 || pctDone >= 0.02f;
+			holder.btnWatch.setVisibility(ready && (single || folder) ? View.VISIBLE
+					: View.GONE);
+			final long watchId = torrentID;
+			holder.btnWatch.setOnClickListener(v -> {
+				android.content.Context c = v.getContext();
+				if (c instanceof android.app.Activity) {
+					TorrentWatch.watch((android.app.Activity) c, session, watchId);
+				}
+			});
+		}
+
 		final String posterUrl;
 		if (holder.ivPoster != null) {
 			final long posterFor = torrentID;

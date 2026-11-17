@@ -874,6 +874,13 @@
 		</provider>
 
 			<!-- Torrent TV: built-in libVLC player -->
+		<!-- Torrent TV: "Continue watching" on the Google TV home screen -->
+		<activity
+			android:name=".activity.WatchNextPlayActivity"
+			android:exported="true"
+			android:excludeFromRecents="true"
+			android:noHistory="true"
+			android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 		<activity
 			android:name=".activity.PlayerActivity"
 			android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|navigation|uiMode"

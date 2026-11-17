@@ -143,4 +143,13 @@
 		<item quantity="one">%d épisode</item>
 		<item quantity="other">%d épisodes</item>
 	</plurals>
+	<string name="watch_button">Regarder</string>
+	<string name="watch_preparing">Préparation…</string>
+	<string name="watch_no_video">Aucune vidéo dans ce torrent</string>
+	<string name="watch_choose">Lequel ?</string>
+	<string name="watch_not_ready">Lecture impossible pour l\'instant, réessaie dans un moment</string>
+	<string name="watch_streaming">Lecture pendant le téléchargement : la suite arrive au fur et à mesure</string>
+	<string name="plus_space_hint">⚠️ Mémoire presque pleine : plus que %1$s libres. Appuie ici pour libérer de la place (films déjà vus).</string>
+	<string name="library_free_title">Libérer de la place</string>
+	<string name="library_freed">%1$s libérés</string>
 </resources>

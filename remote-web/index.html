@@ -316,6 +316,30 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
   .fab { right: max(24px, calc(50% - 440px)); }
 }
 @media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+/* Torrent TV: media library tab */
+.lib-head { display: flex; align-items: center; gap: 10px; margin: 4px 2px 12px; }
+.lib-head h2 { margin: 0; font-size: 19px; }
+.lib-sec { margin: 18px 2px 10px; font-size: 17px; font-weight: 800; }
+.lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 12px; }
+.lib-card {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 16px; padding: 6px;
+  text-align: left; color: var(--ink); cursor: pointer; display: grid; gap: 6px;
+}
+.lib-poster {
+  position: relative; aspect-ratio: 2 / 3; border-radius: 11px; overflow: hidden;
+  background: var(--grad); display: grid; place-items: center; color: #fff; font-weight: 800;
+  font-size: 13px; text-align: center; padding: 6px;
+}
+.lib-poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.lib-badge {
+  position: absolute; left: 6px; bottom: 6px; z-index: 1; font-size: 11px; font-weight: 800;
+  padding: 3px 7px; border-radius: 999px; background: rgba(10, 12, 30, .78); color: #fff;
+}
+.lib-t { font-size: 13px; font-weight: 700; line-height: 1.25; overflow: hidden; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.lib-s { font-size: 12px; color: var(--muted); }
+.lib-empty { color: var(--muted); padding: 30px 6px; text-align: center; }
+.lib-detail img { width: 100%; max-height: 240px; object-fit: cover; border-radius: 14px; margin-bottom: 12px; }
 </style>
 </head>
 <body>
@@ -360,6 +384,7 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     <div class="tabs" role="tablist">
       <button class="tab" id="tabTorrents" role="tab" aria-selected="true" data-i18n="tabTorrents"></button>
       <button class="tab" id="tabSearch" role="tab" aria-selected="false" data-i18n="tabSearch"></button>
+      <button class="tab" id="tabLibrary" role="tab" aria-selected="false" data-i18n="tabLibrary"></button>
     </div>
     <div class="filters" role="group" data-i18n-aria="filterTorrents" id="filters"></div>
     <div class="search-row" id="localSearch">
@@ -388,7 +413,24 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
     <div class="sortbar" id="sSort" role="group" hidden></div>
     <ul class="list" id="results"></ul>
   </section>
+  <section id="libPanel" hidden>
+    <div class="lib-head" id="libHead" hidden>
+      <button class="btn" id="libBack" type="button">‹</button>
+      <h2 id="libShowTitle"></h2>
+    </div>
+    <div id="libBody"></div>
+  </section>
 </main>
+
+<dialog id="libDlg">
+  <div class="sheet lib-detail">
+    <div id="libDlgBody"></div>
+    <div class="sheet-actions">
+      <button type="button" class="btn" id="libDlgClose" data-i18n="close"></button>
+      <button type="button" class="btn primary" id="libDlgPlay" data-i18n="playOnTv"></button>
+    </div>
+  </div>
+</dialog>
 
 
 <button class="fab" id="openAdd">
@@ -505,6 +547,13 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       saveFail: "Échec de l'enregistrement : {0}",
       tabTorrents: "Torrents",
       tabSearch: "Recherche",
+      tabLibrary: "Médiathèque",
+      playOnTv: "▶ Lire sur la TV",
+      libEmpty: "Aucun film pour l'instant. Les téléchargements terminés apparaissent ici une fois la médiathèque ouverte sur la TV.",
+      libContinue: "Continuer à regarder", libNew: "Nouveautés", libMovies: "Films", libSeries: "Séries",
+      libSeen: "Vu", libStarted: "En cours", libEpisodes: "{0} épisodes", libSeason: "Saison {0}",
+      libPlaying: "Lecture lancée sur la TV",
+      libPlayFail: "La TV n'a pas pu lancer la lecture. Ouvre l'appli Torrent TV sur la TV, puis réessaie.",
       searchPh: "Titre d'un film, d'une série…",
       go: "Rechercher",
       cAll: "Tout",
@@ -595,6 +644,13 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       saveFail: "Couldn't save: {0}",
       tabTorrents: "Torrents",
       tabSearch: "Search",
+      tabLibrary: "Library",
+      playOnTv: "▶ Play on the TV",
+      libEmpty: "No films yet. Finished downloads show here once the library has been opened on the TV.",
+      libContinue: "Continue watching", libNew: "New", libMovies: "Movies", libSeries: "Series",
+      libSeen: "Watched", libStarted: "Started", libEpisodes: "{0} episodes", libSeason: "Season {0}",
+      libPlaying: "Playing on the TV",
+      libPlayFail: "The TV could not start playing. Open the Torrent TV app on the TV, then try again.",
       searchPh: "Movie or TV show title…",
       go: "Search",
       cAll: "All",
@@ -685,6 +741,13 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
       saveFail: "Speichern fehlgeschlagen: {0}",
       tabTorrents: "Torrents",
       tabSearch: "Suche",
+      tabLibrary: "Mediathek",
+      playOnTv: "▶ Auf dem Fernseher abspielen",
+      libEmpty: "Noch keine Filme. Fertige Downloads erscheinen hier, sobald die Mediathek auf dem Fernseher geöffnet wurde.",
+      libContinue: "Weiterschauen", libNew: "Neu", libMovies: "Filme", libSeries: "Serien",
+      libSeen: "Gesehen", libStarted: "Angefangen", libEpisodes: "{0} Folgen", libSeason: "Staffel {0}",
+      libPlaying: "Wiedergabe auf dem Fernseher gestartet",
+      libPlayFail: "Der Fernseher konnte die Wiedergabe nicht starten. Öffnen Sie Torrent TV auf dem Fernseher und versuchen Sie es erneut.",
       searchPh: "Titel eines Films oder einer Serie…",
       go: "Suchen",
       cAll: "Alle",
@@ -1400,19 +1463,20 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
   function setMode(m) {
     var prev = mode;
     mode = m;
-    var s = m !== "torrents";
-    ["Torrents", "Search"].forEach(function (k) {
-      document.getElementById("tab" + k).setAttribute("aria-selected",
-        String(m === k.toLowerCase() || (k === "Torrents" && m === "torrents")));
+    var s = m === "search", lib = m === "library", tor = m === "torrents";
+    ["Torrents", "Search", "Library"].forEach(function (k) {
+      document.getElementById("tab" + k).setAttribute("aria-selected", String(m === k.toLowerCase()));
     });
-    filtersEl.hidden = s;
-    document.getElementById("localSearch").hidden = s;
-    listEl.hidden = s;
+    filtersEl.hidden = !tor;
+    document.getElementById("localSearch").hidden = !tor;
+    listEl.hidden = !tor;
     document.getElementById("searchCats").hidden = !s;
     document.getElementById("searchForm").hidden = !s;
     document.getElementById("searchPanel").hidden = !s;
-    document.getElementById("openAdd").hidden = s;
+    document.getElementById("libPanel").hidden = !lib;
+    document.getElementById("openAdd").hidden = !tor;
     document.getElementById("searchTrk").hidden = true;
+    if (lib) { loadLibrary(); return; }
     if (!s) return;
     if (!sResults && !sBusy) {
       // First time: show the latest releases right away
@@ -1424,6 +1488,124 @@ dialog::backdrop { background: rgba(10, 12, 30, .55); }
   }
   document.getElementById("tabTorrents").onclick = function () { setMode("torrents"); };
   document.getElementById("tabSearch").onclick = function () { setMode("search"); };
+  document.getElementById("tabLibrary").onclick = function () { setMode("library"); };
+
+  /* ---------- Media library (films on the TV) ---------- */
+  var libItems = null, libShow = null, libPick = null;
+  var NEW_MS = 14 * 24 * 3600 * 1000;
+  function fmt(key, n) { return t(key).replace("{0}", n); }
+  function epLabel(x) {
+    function two(n) { return (n < 10 ? "0" : "") + n; }
+    return "S" + two(x.season) + "E" + two(x.episode);
+  }
+  function loadLibrary() {
+    var body = document.getElementById("libBody");
+    if (!libItems) body.innerHTML = '<div class="lib-empty">…</div>';
+    ttv("/ttv/library/get", {}, 20000).then(function (j) {
+      libItems = j.items || [];
+      renderLibrary();
+    }, function (e) {
+      body.innerHTML = '<div class="lib-empty">' + esc(e.message) + "</div>";
+    });
+  }
+  function card(x, isShow, count) {
+    var badge = "";
+    if (isShow) {
+      var all = x.eps.every(function (e) { return e.watched; });
+      var any = x.eps.some(function (e) { return e.resume > 0; });
+      badge = all ? t("libSeen") : any ? t("libStarted") : "";
+    } else {
+      badge = x.watched ? t("libSeen") : x.resume > 0 ? t("libStarted") : "";
+    }
+    var f = isShow ? x.eps[0] : x;
+    var sub = isShow ? fmt("libEpisodes", count) : (f.season >= 0 && f.episode >= 0 ? epLabel(f) : f.year);
+    return '<button class="lib-card" type="button" data-' + (isShow ? "show" : "path") + '="' +
+      esc(isShow ? x.key : x.path) + '"><div class="lib-poster">' + esc(f.title) +
+      (f.poster ? '<img loading="lazy" alt="" src="' + esc(f.poster) + '">' : "") +
+      (badge ? '<span class="lib-badge">' + esc(badge) + "</span>" : "") +
+      '</div><div class="lib-t">' + esc(f.title) + '</div><div class="lib-s">' + esc(sub || "") + "</div></button>";
+  }
+  function section(title, list, group) {
+    if (!list.length) return "";
+    var html = "", shows = {}, order = [];
+    list.forEach(function (x) {
+      if (group && x.season >= 0 && x.episode >= 0) {
+        if (!shows[x.show]) { shows[x.show] = { key: x.show, eps: [] }; order.push(shows[x.show]); }
+        shows[x.show].eps.push(x);
+      } else order.push(x);
+    });
+    order.forEach(function (o) { html += o.eps ? card(o, true, o.eps.length) : card(o, false); });
+    return '<div class="lib-sec">' + esc(title) + '</div><div class="lib-grid">' + html + "</div>";
+  }
+  function renderLibrary() {
+    var body = document.getElementById("libBody");
+    var head = document.getElementById("libHead");
+    if (!libItems || !libItems.length) {
+      head.hidden = true;
+      body.innerHTML = '<div class="lib-empty">' + esc(t("libEmpty")) + "</div>";
+      return;
+    }
+    if (libShow) {
+      var eps = libItems.filter(function (x) { return x.show === libShow && x.season >= 0; });
+      eps.sort(function (a, b) { return a.season - b.season || a.episode - b.episode; });
+      if (!eps.length) { libShow = null; renderLibrary(); return; }
+      head.hidden = false;
+      document.getElementById("libShowTitle").textContent = eps[0].title;
+      var html = "", season = null, cards = "";
+      eps.forEach(function (x) {
+        if (x.season !== season) {
+          if (cards) html += '<div class="lib-grid">' + cards + "</div>";
+          cards = "";
+          season = x.season;
+          html += '<div class="lib-sec">' + esc(fmt("libSeason", season)) + "</div>";
+        }
+        cards += card(x, false);
+      });
+      html += '<div class="lib-grid">' + cards + "</div>";
+      body.innerHTML = html;
+      return;
+    }
+    head.hidden = true;
+    var now = Date.now(), cont = [], fresh = [], movies = [], series = [];
+    var items = libItems.slice().sort(function (a, b) { return b.modified - a.modified; });
+    items.forEach(function (x) {
+      var ep = x.season >= 0 && x.episode >= 0;
+      if (!x.watched && x.resume > 0) cont.push(x);
+      else if (!x.watched && now - x.modified < NEW_MS) fresh.push(x);
+      else if (ep) series.push(x);
+      else movies.push(x);
+    });
+    body.innerHTML = section(t("libContinue"), cont, false) + section(t("libNew"), fresh, true) +
+      section(t("libMovies"), movies, false) + section(t("libSeries"), series, true);
+  }
+  document.getElementById("libBody").addEventListener("click", function (e) {
+    var c = e.target.closest(".lib-card");
+    if (!c) return;
+    if (c.dataset.show) { libShow = c.dataset.show; renderLibrary(); window.scrollTo(0, 0); return; }
+    var x = (libItems || []).filter(function (i) { return i.path === c.dataset.path; })[0];
+    if (!x) return;
+    libPick = x;
+    var ep = x.season >= 0 && x.episode >= 0;
+    document.getElementById("libDlgBody").innerHTML =
+      (x.poster ? '<img alt="" src="' + esc(x.poster) + '">' : "") +
+      "<h2>" + esc(x.title) + (ep ? " — " + esc(epLabel(x)) : "") + "</h2>" +
+      "<p>" + esc([x.year, ep && x.episodeTitle ? x.episodeTitle : "", size(x.size)].filter(Boolean).join(" · ")) + "</p>" +
+      (x.overview ? "<p>" + esc(x.overview) + "</p>" : "");
+    showDialog(document.getElementById("libDlg"));
+  });
+  document.getElementById("libBack").onclick = function () { libShow = null; renderLibrary(); };
+  document.getElementById("libDlgClose").onclick = function () { closeDialog(document.getElementById("libDlg")); };
+  document.getElementById("libDlgPlay").onclick = function () {
+    if (!libPick) return;
+    var b = this;
+    b.disabled = true;
+    ttv("/ttv/library/play", { path: libPick.path }, 15000).then(function () {
+      toast(t("libPlaying"));
+      closeDialog(document.getElementById("libDlg"));
+    }, function () {
+      toast(t("libPlayFail"));
+    }).then(function () { b.disabled = false; });
+  };
 
   /* ---------- Tracker search ---------- */
   var sCat = "all";

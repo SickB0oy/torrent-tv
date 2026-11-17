@@ -142,4 +142,13 @@
 		<item quantity="one">%d episode</item>
 		<item quantity="other">%d episodes</item>
 	</plurals>
+	<string name="watch_button">Watch</string>
+	<string name="watch_preparing">Getting it ready…</string>
+	<string name="watch_no_video">No video in this torrent</string>
+	<string name="watch_choose">Which one?</string>
+	<string name="watch_not_ready">Can\'t play it yet, try again in a moment</string>
+	<string name="watch_streaming">Playing while it downloads: the rest arrives as you watch</string>
+	<string name="plus_space_hint">⚠️ Storage almost full: %1$s left. Tap here to free space (films already watched).</string>
+	<string name="library_free_title">Free some space</string>
+	<string name="library_freed">%1$s freed</string>
 </resources>

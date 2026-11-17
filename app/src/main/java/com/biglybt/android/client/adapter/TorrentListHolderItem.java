@@ -73,6 +73,9 @@ class TorrentListHolderItem
 	/** Torrent TV: wide progress bar under the texts */
 	final ProgressBar bar;
 
+	/** Torrent TV: "Regarder" */
+	final View btnWatch;
+
 	boolean animateFlip;
 
 	private final ViewGroup topRightArea;
@@ -107,6 +110,7 @@ class TorrentListHolderItem
 		ivPoster = rowView.findViewById(R.id.torrentrow_poster);
 		ringText = rowView.findViewById(R.id.torrentrow_ring_text);
 		bar = rowView.findViewById(R.id.torrentrow_bar);
+		btnWatch = rowView.findViewById(R.id.torrentrow_watch);
 		if (ivPoster != null && VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
 			// Rounded corners, like the background shape
 			ivPoster.setClipToOutline(true);

@@ -263,6 +263,43 @@ public class TorrentListFragment
 	 * a tap here opens the system screen that allows it. Without it, the phone
 	 * stops downloads and remote access a few minutes after the screen is off.
 	 */
+	/** Torrent TV: less than this free, the "almost full" warning shows */
+	private static final long LOW_SPACE = 8L * 1024 * 1024 * 1024;
+
+	/**
+	 * Torrent TV: warns when the download folder's drive is almost full, and
+	 * offers to free space by deleting films already watched.
+	 */
+	private void updateSpaceHint(@NonNull View root) {
+		TextView hint = root.findViewById(R.id.plus_space_hint);
+		FragmentActivity fa = getActivity();
+		if (hint == null || fa == null || session == null) {
+			return;
+		}
+		long free = -1;
+		try {
+			com.biglybt.android.client.session.SessionSettings ss = session.getSessionSettingsClone();
+			String dir = ss == null ? null : ss.getDownloadDir();
+			java.io.File f = dir == null ? null : new java.io.File(dir);
+			while (f != null && !f.exists()) {
+				f = f.getParentFile();
+			}
+			if (f != null) {
+				free = new android.os.StatFs(f.getAbsolutePath()).getAvailableBytes();
+			}
+		} catch (Throwable ignore) {
+		}
+		boolean low = free >= 0 && free < LOW_SPACE;
+		hint.setVisibility(low ? View.VISIBLE : View.GONE);
+		if (low) {
+			hint.setText(getString(R.string.plus_space_hint,
+					android.text.format.Formatter.formatShortFileSize(fa, free)));
+			hint.setOnClickListener(
+					v -> com.biglybt.android.client.activity.LibraryActivity.openFreeSpace(
+							fa));
+		}
+	}
+
 	private void updateBatteryHint(@NonNull View root) {
 		View hint = root.findViewById(R.id.plus_battery_hint);
 		FragmentActivity fa = getActivity();
@@ -300,6 +337,7 @@ public class TorrentListFragment
 		if (root != null) {
 			// Back from the battery settings screen
 			updateBatteryHint(root);
+			updateSpaceHint(root);
 		}
 		simplifyTvSideList();
 	}
@@ -515,6 +553,7 @@ public class TorrentListFragment
 			return;
 		}
 		updateBatteryHint(root);
+		updateSpaceHint(root);
 		offerUsbDrive();
 		View stop = root.findViewById(R.id.plus_service_stop);
 		if (stop != null && session.getRemoteProfile()

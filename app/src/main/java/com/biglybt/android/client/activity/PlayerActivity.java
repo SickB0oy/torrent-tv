@@ -475,8 +475,14 @@ public class PlayerActivity
 		clearPosition();
 		markWatched();
 		String title = (n.title != null ? n.title : "") + " — " + n.episodeLabel();
-		play(this, n.uri(), title);
-		finish();
+		// singleTop activity: a new start would land in this one, so it is
+		// rebuilt with the next episode instead
+		Intent i = new Intent(this, PlayerActivity.class);
+		i.setData(n.uri());
+		i.putExtra(EXTRA_TITLE, title);
+		setIntent(i);
+		nextItem = null;
+		recreate();
 	}
 
 	private void failed() {
@@ -1007,6 +1013,8 @@ public class PlayerActivity
 		long length = player.getLength();
 		if (t > 30_000 && length > 0 && t < length * 0.95) {
 			positions().edit().putLong(key(), t).apply();
+			com.biglybt.android.client.media.WatchNext.continueWatching(this, uri, t,
+					length);
 		} else if (length > 0 && t >= length * 0.95) {
 			clearPosition();
 			markWatched();
@@ -1016,6 +1024,10 @@ public class PlayerActivity
 	/** Read by the media library to show "Watched" */
 	private void markWatched() {
 		positions().edit().putBoolean("watched:" + key(), true).apply();
+		com.biglybt.android.client.media.WatchNext.remove(this, uri);
+		if (nextItem != null) {
+			com.biglybt.android.client.media.WatchNext.nextUp(this, nextItem.uri());
+		}
 	}
 
 	private void clearPosition() {

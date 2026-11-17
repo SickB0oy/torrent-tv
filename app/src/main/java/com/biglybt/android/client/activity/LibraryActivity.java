@@ -85,6 +85,15 @@ public class LibraryActivity
 
 	private static final String KEY_DIRS = "last_dirs";
 
+	private static final String EXTRA_FREE_SPACE = "free_space";
+
+	/** Torrent TV: the library, with "free some space" open */
+	public static void openFreeSpace(@NonNull Context context) {
+		Intent i = new Intent(context, LibraryActivity.class);
+		i.putExtra(EXTRA_FREE_SPACE, true);
+		context.startActivity(i);
+	}
+
 	public static void open(@NonNull Context context,
 			@Nullable ArrayList<String> dirs) {
 		Intent i = new Intent(context, LibraryActivity.class);
@@ -185,6 +194,10 @@ public class LibraryActivity
 		items.addAll(list);
 		buildRows();
 		updateEmpty();
+		if (!items.isEmpty() && getIntent().getBooleanExtra(EXTRA_FREE_SPACE, false)) {
+			getIntent().removeExtra(EXTRA_FREE_SPACE);
+			grid.post(this::askFreeSpace);
+		}
 		// TV remote: start on the first poster rather than the Back button
 		if (!focusedOnce && !items.isEmpty()) {
 			focusedOnce = true;
@@ -574,6 +587,55 @@ public class LibraryActivity
 		}
 	}
 
+	/* ---------- Free space ---------- */
+
+	/**
+	 * Torrent TV: every video, biggest first, the ones already watched ticked:
+	 * delete them in one go.
+	 */
+	private void askFreeSpace() {
+		if (isFinishing()) {
+			return;
+		}
+		final ArrayList<MediaLibrary.Item> list = new ArrayList<>(items);
+		java.util.Collections.sort(list, (a, b) -> {
+			boolean wa = watched(a), wb = watched(b);
+			if (wa != wb) {
+				return wa ? -1 : 1;
+			}
+			return Long.compare(b.size, a.size);
+		});
+		final boolean[] checked = new boolean[list.size()];
+		String[] names = new String[list.size()];
+		for (int i = 0; i < list.size(); i++) {
+			MediaLibrary.Item it = list.get(i);
+			checked[i] = watched(it);
+			names[i] = (watched(it) ? "✓ " : "") + it.title
+					+ (it.isEpisode() ? " " + it.episodeLabel() : "") + " · "
+					+ android.text.format.Formatter.formatShortFileSize(this, it.size);
+		}
+		new MaterialAlertDialogBuilder(this).setTitle(
+				R.string.library_free_title).setMultiChoiceItems(names, checked,
+						(d, which, isChecked) -> checked[which] = isChecked).setPositiveButton(
+								R.string.library_delete, (d, w) -> {
+									long freed = 0;
+									int n = 0;
+									for (int i = 0; i < list.size(); i++) {
+										if (checked[i]) {
+											freed += list.get(i).size;
+											n++;
+											deleteItem(list.get(i), false);
+										}
+									}
+									if (n > 0) {
+										Toast.makeText(this, getString(R.string.library_freed,
+												android.text.format.Formatter.formatShortFileSize(this,
+														freed)),
+												Toast.LENGTH_LONG).show();
+									}
+								}).setNegativeButton(android.R.string.cancel, null).show();
+	}
+
 	/* ---------- Delete ---------- */
 
 	private void confirmDelete(MediaLibrary.Item it, AlertDialog details) {
@@ -582,7 +644,7 @@ public class LibraryActivity
 						R.string.library_delete_message).setPositiveButton(
 								R.string.library_delete, (d, w) -> {
 									details.dismiss();
-									deleteItem(it);
+									deleteItem(it, true);
 								}).setNegativeButton(android.R.string.cancel, null).show();
 	}
 
@@ -592,7 +654,7 @@ public class LibraryActivity
 	 * the file again). For a season pack, only this episode's file is
 	 * deleted: the other episodes stay.
 	 */
-	private void deleteItem(MediaLibrary.Item it) {
+	private void deleteItem(MediaLibrary.Item it, boolean toast) {
 		final File file = new File(it.path);
 		boolean removedWithData = false;
 		try {
@@ -642,11 +704,14 @@ public class LibraryActivity
 		}, "LibraryDelete").start();
 		playerPrefs().edit().remove(it.uri().toString()).remove(
 				"watched:" + it.uri().toString()).apply();
+		com.biglybt.android.client.media.WatchNext.remove(this, it.uri());
 		items.remove(it);
 		buildRows();
 		updateEmpty();
-		Toast.makeText(this, getString(R.string.library_deleted, it.title),
-				Toast.LENGTH_SHORT).show();
+		if (toast) {
+			Toast.makeText(this, getString(R.string.library_deleted, it.title),
+					Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	/** Let the user type the right title when the guess was wrong */

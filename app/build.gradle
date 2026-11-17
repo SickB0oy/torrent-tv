@@ -34,7 +34,7 @@ android {
         applicationId "app.torrenttv"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionName "1.3.4.4-plus63"
+        versionName "1.3.4.4-plus64"
         // a.b.c -> aabbccdd, where dd = build #
         versionCode 1030404
         multiDexEnabled true
@@ -168,6 +168,8 @@ dependencies {
     implementation "androidx.annotation:annotation:${annotationVersion}"
     // https://mvnrepository.com/artifact/androidx.leanback/leanback?repo=google
     implementation "androidx.leanback:leanback:${leanbackVersion}"
+    // Torrent TV: "Continue watching" row of the Google TV home screen
+    implementation "androidx.tvprovider:tvprovider:1.0.0"
     // https://mvnrepository.com/artifact/androidx.appcompat/appcompat?repo=google
     implementation "androidx.appcompat:appcompat:${appcompatVersion}"
     // https://mvnrepository.com/artifact/androidx.recyclerview/recyclerview?repo=google

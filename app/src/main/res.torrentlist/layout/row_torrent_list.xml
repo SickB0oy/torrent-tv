@@ -102,6 +102,24 @@
                 app:trackCornerRadius="4dp"
                 app:trackThickness="8dp"
                 />
+            <!-- Torrent TV: play now, even while it downloads -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/torrentrow_watch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:minHeight="44dp"
+                android:text="@string/watch_button"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFFFF"
+                android:visibility="gone"
+                app:backgroundTint="#FF1E9E70"
+                app:cornerRadius="18dp"
+                app:icon="@drawable/ic_player_play"
+                app:iconTint="#FFFFFFFF"
+                app:strokeColor="@color/plus_focus_stroke"
+                app:strokeWidth="3dp"
+                />
         </LinearLayout>
 
         <TextView
