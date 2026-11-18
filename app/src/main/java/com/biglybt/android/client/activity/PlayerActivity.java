@@ -331,16 +331,24 @@ public class PlayerActivity
 		tracksPicked = true;
 		try {
 			MediaPlayer.TrackDescription[] audio = player.getAudioTracks();
-			int bestAudio = -1, bestScore = 0;
+			java.util.Map<Integer, Integer> quality = audioQuality();
+			// French first (VFF > VF > VFQ), then the best sound of that language
+			int bestAudio = -1, bestLang = 0, bestQ = Integer.MIN_VALUE;
 			for (int i = 0; audio != null && i < audio.length; i++) {
-				int sc = frenchScore(audio[i].name);
-				if (audio[i].id != -1 && sc > bestScore) {
-					bestScore = sc;
+				if (audio[i].id == -1 || isCommentary(audio[i].name)) {
+					continue;
+				}
+				int lang = frenchScore(audio[i].name);
+				Integer q = quality.get(audio[i].id);
+				int qv = q == null ? 0 : q;
+				if (lang > bestLang || (lang == bestLang && qv > bestQ)) {
+					bestLang = lang;
+					bestQ = qv;
 					bestAudio = audio[i].id;
 				}
 			}
-			boolean frenchAudio = bestScore > 0;
-			if (frenchAudio && player.getAudioTrack() != bestAudio) {
+			boolean frenchAudio = bestLang > 0;
+			if (bestAudio != -1 && player.getAudioTrack() != bestAudio) {
 				player.setAudioTrack(bestAudio);
 			}
 			MediaPlayer.TrackDescription[] subs = player.getSpuTracks();
@@ -367,6 +375,97 @@ public class PlayerActivity
 			}
 		} catch (Throwable t) {
 			Log.w(TAG, "autoPickTracks", t);
+		}
+	}
+
+	private static boolean isCommentary(@Nullable String name) {
+		if (name == null) {
+			return false;
+		}
+		String n = name.toLowerCase(Locale.ROOT);
+		return n.contains("comment") || n.contains("audiodesc") || n.contains("audio desc")
+				|| n.contains("malvoyant");
+	}
+
+	/**
+	 * Sound quality of each audio track (by id): channels first (7.1 > 5.1 >
+	 * stereo), then codec (TrueHD/DTS-HD/FLAC > E-AC3 > DTS > AC3 > AAC…),
+	 * then bitrate. Read from the file's track list; empty if unknown.
+	 */
+	@NonNull
+	private java.util.Map<Integer, Integer> audioQuality() {
+		java.util.Map<Integer, Integer> out = new java.util.HashMap<>();
+		Object media = null;
+		try {
+			media = player.getClass().getMethod("getMedia").invoke(player);
+			if (media == null) {
+				return out;
+			}
+			int count = (Integer) media.getClass().getMethod("getTrackCount").invoke(
+					media);
+			java.lang.reflect.Method getTrack = media.getClass().getMethod("getTrack",
+					int.class);
+			for (int i = 0; i < count; i++) {
+				Object t = getTrack.invoke(media, i);
+				if (t == null) {
+					continue;
+				}
+				int channels = intField(t, "channels");
+				if (channels <= 0) {
+					continue; // not an audio track
+				}
+				int id = intField(t, "id");
+				String codec = strField(t, "codec").toLowerCase(Locale.ROOT).trim();
+				String desc = (strField(t, "description") + " "
+						+ strField(t, "originalCodec")).toLowerCase(Locale.ROOT);
+				int c;
+				if (codec.equals("mlp") || codec.contains("truehd") || desc.contains("truehd")
+						|| desc.contains("dts-hd") || desc.contains("dts:x")
+						|| codec.contains("flac")) {
+					c = 6;
+				} else if (codec.contains("eac3") || desc.contains("atmos")) {
+					c = 5;
+				} else if (codec.contains("dts")) {
+					c = 4;
+				} else if (codec.contains("a52") || codec.contains("ac3")) {
+					c = 3;
+				} else if (codec.contains("opus") || codec.contains("mp4a")
+						|| codec.contains("aac")) {
+					c = 2;
+				} else {
+					c = 1;
+				}
+				int bitrate = intField(t, "bitrate") / 1000;
+				out.put(id, Math.min(channels, 8) * 10_000 + c * 1_000 + Math.min(bitrate, 999));
+			}
+		} catch (Throwable t) {
+			Log.w(TAG, "audioQuality", t);
+		} finally {
+			if (media != null) {
+				try {
+					media.getClass().getMethod("release").invoke(media);
+				} catch (Throwable ignore) {
+				}
+			}
+		}
+		return out;
+	}
+
+	private static int intField(Object o, String name) {
+		try {
+			return ((Number) o.getClass().getField(name).get(o)).intValue();
+		} catch (Throwable t) {
+			return 0;
+		}
+	}
+
+	@NonNull
+	private static String strField(Object o, String name) {
+		try {
+			Object v = o.getClass().getField(name).get(o);
+			return v == null ? "" : v.toString();
+		} catch (Throwable t) {
+			return "";
 		}
 	}
 

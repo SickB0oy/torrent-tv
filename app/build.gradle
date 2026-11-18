@@ -34,7 +34,7 @@ android {
         applicationId "app.torrenttv"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionName "1.3.4.4-plus70"
+        versionName "1.3.4.4-plus71"
         // a.b.c -> aabbccdd, where dd = build #
         versionCode 1030404
         multiDexEnabled true
