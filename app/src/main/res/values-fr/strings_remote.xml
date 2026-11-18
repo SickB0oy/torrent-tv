@@ -156,4 +156,18 @@
 	<string name="library_show_season">Saison %1$d · %2$s</string>
 	<string name="library_show_seasons">Saisons %1$d à %2$d · %3$s</string>
 	<string name="library_delete_show_message">Toute la série sera effacée définitivement de l\'appareil : %1$s, %2$s. Les torrents d\'origine seront aussi retirés des téléchargements.</string>
+	<string name="share_title">Dossier du PC</string>
+	<string name="share_none">Aucun. Ajoute le dossier partagé d\'un ordinateur pour regarder ses films ici</string>
+	<string name="share_message">Les films d\'un dossier partagé de ton ordinateur apparaissent dans la médiathèque et sont lus par le réseau.\n\nAdresse : l\'adresse IP du PC puis le dossier partagé, ex. 192.168.1.20/Films. Utilisateur : ton compte Windows (e-mail du compte Microsoft, ou nom local) ; laisse vide pour un dossier ouvert à tous.</string>
+	<string name="share_address_hint">192.168.1.20/Films</string>
+	<string name="share_user_hint">Utilisateur (facultatif)</string>
+	<string name="share_password_hint">Mot de passe</string>
+	<string name="share_save">Enregistrer</string>
+	<string name="share_save_anyway">Enregistrer quand même</string>
+	<string name="share_remove">Retirer</string>
+	<string name="share_checking">Vérification de la connexion…</string>
+	<string name="share_ok">Connecté. Ses films apparaîtront dans la médiathèque à la prochaine actualisation.</string>
+	<string name="share_failed">Impossible d\'ouvrir le dossier :\n%1$s\n\nVérifie l\'adresse, le compte, et que le PC est allumé et partage bien le dossier.</string>
+	<string name="share_bad_address">Adresse non comprise. Exemple : 192.168.1.20/Films</string>
+	<string name="share_delete_failed">Suppression impossible sur le PC</string>
 </resources>

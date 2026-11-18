@@ -155,4 +155,18 @@
 	<string name="library_show_season">Season %1$d · %2$s</string>
 	<string name="library_show_seasons">Seasons %1$d to %2$d · %3$s</string>
 	<string name="library_delete_show_message">The whole series is erased from the device for good: %1$s, %2$s. The torrents they came from are removed from the downloads too.</string>
+	<string name="share_title">Computer folder</string>
+	<string name="share_none">None. Add the shared folder of a computer to watch its films here</string>
+	<string name="share_message">The films of a shared folder on your computer appear in the media library, played over the network.\n\nAddress: the computer\'s IP address then the shared folder, e.g. 192.168.1.20/Films. User: your Windows account (e-mail of the Microsoft account, or local name); leave empty for a folder open to everyone.</string>
+	<string name="share_address_hint">192.168.1.20/Films</string>
+	<string name="share_user_hint">User (optional)</string>
+	<string name="share_password_hint">Password</string>
+	<string name="share_save">Save</string>
+	<string name="share_save_anyway">Save anyway</string>
+	<string name="share_remove">Remove</string>
+	<string name="share_checking">Checking the connection…</string>
+	<string name="share_ok">Connected. Its films appear in the media library at the next refresh.</string>
+	<string name="share_failed">Could not open the folder:\n%1$s\n\nCheck the address, the account, and that the computer is on and shares the folder.</string>
+	<string name="share_bad_address">Address not understood. Example: 192.168.1.20/Films</string>
+	<string name="share_delete_failed">Could not delete it on the computer</string>
 </resources>

@@ -56,6 +56,11 @@
 			android:title="@string/default_save_location"
 			tools:summary="Somewhere"
 			/>
+		<!-- Torrent TV: a computer's shared folder in the media library -->
+		<Preference
+			android:key="plus_network_share"
+			android:icon="@drawable/pref_ic_share"
+			android:title="@string/share_title"/>
 
 		<com.biglybt.android.widget.SwitchPreference
 			android:id="@+id/settings_show_open_options"

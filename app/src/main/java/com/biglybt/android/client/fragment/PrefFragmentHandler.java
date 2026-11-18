@@ -297,6 +297,11 @@ public class PrefFragmentHandler
 				return true;
 			}
 
+			case "plus_network_share": {
+				askNetworkShare(preference);
+				return true;
+			}
+
 			case "plus_new_password": {
 				new com.google.android.material.dialog.MaterialAlertDialogBuilder(
 						activity).setTitle(R.string.plus_new_password).setMessage(
@@ -507,6 +512,14 @@ public class PrefFragmentHandler
 			prefShowOpenOptions.setChecked(ds.getBoolean(KEY_SHOW_OPEN_OPTIONS));
 		}
 
+		Preference prefShare = findPreference("plus_network_share");
+		if (prefShare != null) {
+			com.biglybt.android.client.media.NetworkShare.Config c = com.biglybt.android.client.media.NetworkShare.get(
+					activity);
+			prefShare.setSummary(c == null ? activity.getString(R.string.share_none)
+					: c.address());
+		}
+
 		Preference prefNewPw = findPreference("plus_new_password");
 		if (prefNewPw != null) {
 			String pw = com.biglybt.android.client.PlusRemoteInfo.currentPassword();
@@ -699,5 +712,92 @@ public class PrefFragmentHandler
 			session.saveProfile();
 			session.removeSessionSettingsChangedListeners(settingsChangedListener);
 		}
+	}
+
+	/**
+	 * Torrent TV: address and account of a computer's shared folder; checked
+	 * before it is saved.
+	 */
+	private void askNetworkShare(final Preference pref) {
+		final android.content.Context ctx = activity;
+		com.biglybt.android.client.media.NetworkShare.Config cur = com.biglybt.android.client.media.NetworkShare.get(
+				ctx);
+		android.widget.LinearLayout box = new android.widget.LinearLayout(ctx);
+		box.setOrientation(android.widget.LinearLayout.VERTICAL);
+		int pad = (int) (20 * ctx.getResources().getDisplayMetrics().density);
+		box.setPadding(pad, pad / 2, pad, 0);
+		final android.widget.EditText addr = new android.widget.EditText(ctx);
+		addr.setHint(R.string.share_address_hint);
+		addr.setSingleLine(true);
+		addr.setInputType(android.text.InputType.TYPE_CLASS_TEXT
+				| android.text.InputType.TYPE_TEXT_VARIATION_URI);
+		final android.widget.EditText user = new android.widget.EditText(ctx);
+		user.setHint(R.string.share_user_hint);
+		user.setSingleLine(true);
+		user.setInputType(android.text.InputType.TYPE_CLASS_TEXT
+				| android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+		final android.widget.EditText pw = new android.widget.EditText(ctx);
+		pw.setHint(R.string.share_password_hint);
+		pw.setSingleLine(true);
+		pw.setInputType(android.text.InputType.TYPE_CLASS_TEXT
+				| android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+		if (cur != null) {
+			addr.setText(cur.address());
+			user.setText(cur.user);
+			pw.setText(cur.password);
+		}
+		box.addView(addr);
+		box.addView(user);
+		box.addView(pw);
+		com.google.android.material.dialog.MaterialAlertDialogBuilder b = new com.google.android.material.dialog.MaterialAlertDialogBuilder(
+				ctx).setTitle(R.string.share_title).setMessage(
+						R.string.share_message).setView(box).setPositiveButton(
+								R.string.share_save, (d, w) -> {
+									final com.biglybt.android.client.media.NetworkShare.Config c = com.biglybt.android.client.media.NetworkShare.parse(
+											addr.getText().toString(), user.getText().toString(),
+											pw.getText().toString());
+									if (c == null) {
+										android.widget.Toast.makeText(ctx, R.string.share_bad_address,
+												android.widget.Toast.LENGTH_LONG).show();
+										return;
+									}
+									android.widget.Toast.makeText(ctx, R.string.share_checking,
+											android.widget.Toast.LENGTH_SHORT).show();
+									new Thread(() -> {
+										String err = null;
+										try {
+											com.biglybt.android.client.media.NetworkShare.test(c);
+										} catch (Throwable t) {
+											err = t.getMessage() == null ? t.toString()
+													: t.getMessage();
+										}
+										final String error = err;
+										activity.runOnUiThread(() -> {
+											if (error == null) {
+												com.biglybt.android.client.media.NetworkShare.save(ctx, c);
+												pref.setSummary(c.address());
+												android.widget.Toast.makeText(ctx, R.string.share_ok,
+														android.widget.Toast.LENGTH_LONG).show();
+												return;
+											}
+											new com.google.android.material.dialog.MaterialAlertDialogBuilder(
+													ctx).setTitle(R.string.share_title).setMessage(
+															ctx.getString(R.string.share_failed, error)).setPositiveButton(
+																	android.R.string.ok, null).setNeutralButton(
+																			R.string.share_save_anyway, (d2, w2) -> {
+																				com.biglybt.android.client.media.NetworkShare.save(
+																						ctx, c);
+																				pref.setSummary(c.address());
+																			}).show();
+										});
+									}, "ShareTest").start();
+								}).setNegativeButton(android.R.string.cancel, null);
+		if (cur != null) {
+			b.setNeutralButton(R.string.share_remove, (d, w) -> {
+				com.biglybt.android.client.media.NetworkShare.save(ctx, null);
+				pref.setSummary(R.string.share_none);
+			});
+		}
+		b.show();
 	}
 }

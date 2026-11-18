@@ -152,4 +152,18 @@
 	<string name="library_show_season">Staffel %1$d · %2$s</string>
 	<string name="library_show_seasons">Staffeln %1$d bis %2$d · %3$s</string>
 	<string name="library_delete_show_message">Die ganze Serie wird endgültig vom Gerät gelöscht: %1$s, %2$s. Die zugehörigen Torrents werden auch aus den Downloads entfernt.</string>
+	<string name="share_title">Computer-Ordner</string>
+	<string name="share_none">Keiner. Fügen Sie den freigegebenen Ordner eines Computers hinzu, um seine Filme hier zu sehen</string>
+	<string name="share_message">Die Filme eines freigegebenen Ordners Ihres Computers erscheinen in der Mediathek und werden über das Netzwerk abgespielt.\n\nAdresse: die IP-Adresse des Computers und der freigegebene Ordner, z. B. 192.168.1.20/Filme. Benutzer: Ihr Windows-Konto (E-Mail des Microsoft-Kontos oder lokaler Name); leer lassen für einen für alle offenen Ordner.</string>
+	<string name="share_address_hint">192.168.1.20/Filme</string>
+	<string name="share_user_hint">Benutzer (optional)</string>
+	<string name="share_password_hint">Passwort</string>
+	<string name="share_save">Speichern</string>
+	<string name="share_save_anyway">Trotzdem speichern</string>
+	<string name="share_remove">Entfernen</string>
+	<string name="share_checking">Verbindung wird geprüft…</string>
+	<string name="share_ok">Verbunden. Die Filme erscheinen bei der nächsten Aktualisierung in der Mediathek.</string>
+	<string name="share_failed">Der Ordner konnte nicht geöffnet werden:\n%1$s\n\nPrüfen Sie Adresse, Konto und ob der Computer eingeschaltet ist und den Ordner freigibt.</string>
+	<string name="share_bad_address">Adresse nicht verstanden. Beispiel: 192.168.1.20/Filme</string>
+	<string name="share_delete_failed">Löschen auf dem Computer nicht möglich</string>
 </resources>

@@ -763,6 +763,28 @@ public class LibraryActivity
 	 * deleted: the other episodes stay.
 	 */
 	private void deleteItem(MediaLibrary.Item it, boolean toast) {
+		if (com.biglybt.android.client.media.NetworkShare.isRemote(it.path)) {
+			// On the computer's shared folder
+			final android.content.Context app = getApplicationContext();
+			new Thread(() -> {
+				if (com.biglybt.android.client.media.NetworkShare.delete(app, it.path)) {
+					library.forget(it.path);
+				} else {
+					runOnUiThread(() -> Toast.makeText(app, R.string.share_delete_failed,
+							Toast.LENGTH_LONG).show());
+				}
+			}, "LibraryDelete").start();
+			playerPrefs().edit().remove(it.uri().toString()).remove(
+					"watched:" + it.uri().toString()).apply();
+			items.remove(it);
+			buildRows();
+			updateEmpty();
+			if (toast) {
+				Toast.makeText(this, getString(R.string.library_deleted, it.title),
+						Toast.LENGTH_SHORT).show();
+			}
+			return;
+		}
 		final File file = new File(it.path);
 		boolean removedWithData = false;
 		try {

@@ -181,3 +181,15 @@
 # libVLC: classes and fields used from native code
 -keep class org.videolan.libvlc.** { *; }
 -dontwarn org.videolan.**
+
+# Torrent TV: SMB (computer shared folder)
+-keep class com.hierynomus.** { *; }
+-keep class net.engio.mbassy.** { *; }
+-keep class org.bouncycastle.** { *; }
+-dontwarn com.hierynomus.**
+-dontwarn net.engio.mbassy.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.slf4j.**
+-dontwarn javax.el.**
+-dontwarn org.ietf.jgss.**
+-dontwarn javax.security.auth.**

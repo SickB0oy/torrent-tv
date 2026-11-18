@@ -191,6 +191,13 @@ public class PlayerActivity
 			return;
 		}
 		media.setHWDecoderEnabled(true, false);
+		if ("smb".equals(uri.getScheme())) {
+			// Torrent TV: the computer's shared folder, signed in
+			for (String o : com.biglybt.android.client.media.NetworkShare.playerOptions(
+					this)) {
+				media.addOption(o);
+			}
+		}
 		// Start directly at the saved position: no second wait to seek there
 		long resumeAt = positions().getLong(key(), 0);
 		if (resumeAt > 0) {
@@ -420,10 +427,12 @@ public class PlayerActivity
 			findViewById(R.id.player_next).setVisibility(View.GONE);
 			showControls();
 		});
-		if (!"file".equals(uri.getScheme()) || uri.getPath() == null) {
+		final String path = "smb".equals(uri.getScheme())
+				? Uri.decode(uri.toString())
+				: "file".equals(uri.getScheme()) ? uri.getPath() : null;
+		if (path == null) {
 			return;
 		}
-		final String path = uri.getPath();
 		new Thread(() -> {
 			com.biglybt.android.client.media.MediaLibrary.Item n = new com.biglybt.android.client.media.MediaLibrary(
 					this).nextEpisode(path);

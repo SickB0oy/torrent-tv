@@ -130,7 +130,8 @@ public class MediaLibrary
 		}
 
 		public Uri uri() {
-			return Uri.fromFile(new File(path));
+			return NetworkShare.isRemote(path) ? NetworkShare.uri(path)
+					: Uri.fromFile(new File(path));
 		}
 
 		public boolean isEpisode() {
@@ -295,6 +296,31 @@ public class MediaLibrary
 			it.modified = f.lastModified();
 			items.add(it);
 		}
+		// Torrent TV: videos of the computer's shared folder, if one is set
+		NetworkShare.Config share = NetworkShare.get(context);
+		if (share != null) {
+			try {
+				for (NetworkShare.Video v : NetworkShare.listVideos(share)) {
+					Item it = byPath.get(v.path);
+					if (it == null || it.size != v.size) {
+						it = new Item();
+						it.path = v.path;
+						it.size = v.size;
+						parseName(new File(v.path.substring("smb:/".length())), it);
+					}
+					it.modified = v.modified;
+					items.add(it);
+				}
+			} catch (Throwable t) {
+				// Computer off or unreachable: keep its videos as they were
+				Log.w(TAG, "Network share unreachable", t);
+				for (Item it : cached) {
+					if (NetworkShare.isRemote(it.path)) {
+						items.add(it);
+					}
+				}
+			}
+		}
 		sort(items);
 		if (progress != null) {
 			progress.onUpdate(new ArrayList<>(items));
@@ -403,7 +429,7 @@ public class MediaLibrary
 		Item best = null;
 		for (Item it : all) {
 			if (!it.isEpisode() || !show.equals(showKey(it))
-					|| !new File(it.path).exists()) {
+					|| !(NetworkShare.isRemote(it.path) || new File(it.path).exists())) {
 				continue;
 			}
 			boolean after = it.season > cur.season

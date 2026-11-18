@@ -175,7 +175,9 @@ public class TorrentTVWebPlugin
 				"player_positions", android.content.Context.MODE_MULTI_PROCESS);
 		JSONArray a = new JSONArray();
 		for (com.biglybt.android.client.media.MediaLibrary.Item it : lib.loadCache()) {
-			if (it.path == null || !new java.io.File(it.path).isFile()) {
+			if (it.path == null
+					|| !(com.biglybt.android.client.media.NetworkShare.isRemote(it.path)
+							|| new java.io.File(it.path).isFile())) {
 				continue;
 			}
 			String key = it.uri().toString();
@@ -208,7 +210,8 @@ public class TorrentTVWebPlugin
 				ctx);
 		com.biglybt.android.client.media.MediaLibrary.Item it = path.isEmpty() ? null
 				: lib.findByPath(path);
-		if (it == null || !new java.io.File(path).isFile()) {
+		if (it == null || !(com.biglybt.android.client.media.NetworkShare.isRemote(path)
+				|| new java.io.File(path).isFile())) {
 			return new JSONObject().put("error", "NOT_FOUND");
 		}
 		String title = it.title == null ? new java.io.File(path).getName()
